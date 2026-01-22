@@ -1,259 +1,262 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="ru">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2487.7">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; -webkit-text-stroke: #000000}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; -webkit-text-stroke: #000000; min-height: 14.0px}
-    span.s1 {font-kerning: none}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prediction Mini App</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+* { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+
+body {
+    margin: 0;
+    background: linear-gradient(180deg, #2b2a3d, #3c3b66);
+    color: #fff;
+}
+
+/* HEADER */
+.header {
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.connect {
+    background: #28d7e5;
+    color: #000;
+    padding: 10px 16px;
+    border-radius: 14px;
+    font-weight: 600;
+}
+
+/* TABS */
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+}
+
+.tab {
+    color: #aaa;
+    font-size: 18px;
+}
+
+.tab.active {
+    color: #a78bfa;
+    border-bottom: 3px solid #4adee5;
+    padding-bottom: 6px;
+}
+
+/* PAIR SWITCH */
+.pairs {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 16px;
+}
+
+.pair {
+    padding: 8px 14px;
+    border-radius: 12px;
+    background: #1e1e2f;
+    color: #aaa;
+}
+
+.pair.active {
+    background: #4adee5;
+    color: #000;
+}
+
+/* PRICE */
+.price-box {
+    margin: 12px 20px;
+    padding: 14px;
+    background: #12121a;
+    border-radius: 18px;
+}
+
+.price {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* TIMER */
+.timer {
+    margin: 0 20px;
+    background: #1e1e2f;
+    padding: 10px 14px;
+    border-radius: 14px;
+    display: inline-block;
+}
+
+/* CARD */
+.card {
+    margin: 20px;
+    background: #232338;
+    border-radius: 22px;
+    padding: 16px;
+}
+
+.card-title {
+    text-align: center;
+    font-size: 22px;
+    color: #4ade80;
+}
+
+.sub {
+    text-align: center;
+    color: #aaa;
+    margin-bottom: 12px;
+}
+
+.inner {
+    border: 2px solid #ec4899;
+    border-radius: 18px;
+    padding: 14px;
+}
+
+.big {
+    font-size: 30px;
+    color: #ec4899;
+    font-weight: bold;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    color: #bbb;
+}
+
+.actions {
+    margin: 20px;
+    background: #1f1f2e;
+    border-radius: 22px;
+    padding: 16px;
+}
+
+.btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+    border: none;
+    font-size: 18px;
+    margin-top: 10px;
+}
+
+.up { background: #34d399; }
+.down { background: #ec4899; }
+
+.nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #1a1a2a;
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+}
+</style>
 </head>
+
 <body>
-<p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
-<p class="p1"><span class="s1">&lt;html lang="ru"&gt;</span></p>
-<p class="p1"><span class="s1">&lt;head&gt;</span></p>
-<p class="p1"><span class="s1">&lt;meta charset="UTF-8"&gt;</span></p>
-<p class="p1"><span class="s1">&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</span></p>
-<p class="p1"><span class="s1">&lt;title&gt;Prediction Mini App&lt;/title&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;script src="https://telegram.org/js/telegram-web-app.js"&gt;&lt;/script&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;style&gt;</span></p>
-<p class="p1"><span class="s1">* {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>box-sizing: border-box;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>font-family: -apple-system, BlinkMacSystemFont, sans-serif;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">body {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>margin: 0;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>background: linear-gradient(180deg, #2b2a3d, #3c3b66);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>color: #fff;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">/* HEADER */</span></p>
-<p class="p1"><span class="s1">.header {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>padding: 12px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>display: flex;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>justify-content: space-between;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>align-items: center;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.header .connect {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>background: #28d7e5;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>color: #000;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>padding: 10px 16px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>border-radius: 14px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>font-weight: bold;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">/* TABS */</span></p>
-<p class="p1"><span class="s1">.tabs {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>display: flex;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>justify-content: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>gap: 40px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>margin-top: 10px;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.tab {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>color: #aaa;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>font-size: 18px;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.tab.active {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>color: #a78bfa;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>border-bottom: 3px solid #4adee5;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>padding-bottom: 6px;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">/* PRICE */</span></p>
-<p class="p1"><span class="s1">.price-box {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>margin: 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>padding: 14px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>background: #12121a;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>border-radius: 18px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>display: flex;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>align-items: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>gap: 12px;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.price {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>font-size: 26px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>font-weight: bold;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">/* TIMER */</span></p>
-<p class="p1"><span class="s1">.timer {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>margin: 0 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>background: #1e1e2f;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>padding: 10px 14px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>border-radius: 14px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>display: inline-flex;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>align-items: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>gap: 8px;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">/* CARD */</span></p>
-<p class="p1"><span class="s1">.card {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>margin: 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>background: #232338;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>border-radius: 22px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>padding: 16px;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.card-title {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>text-align: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>font-size: 22px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>color: #4ade80;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.sub {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>text-align: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>color: #aaa;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>margin-bottom: 12px;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.inner {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>border: 2px solid #ec4899;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>border-radius: 18px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>padding: 14px;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.big {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>font-size: 30px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>color: #ec4899;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>font-weight: bold;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.row {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>display: flex;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>justify-content: space-between;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>margin-top: 8px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>color: #bbb;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.down {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>background: #ec4899;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>text-align: center;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>padding: 14px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>border-radius: 0 0 20px 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>margin-top: 14px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>font-size: 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>font-weight: bold;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">/* ACTIONS */</span></p>
-<p class="p1"><span class="s1">.actions {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>margin: 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>background: #1f1f2e;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>border-radius: 22px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>padding: 16px;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.btn {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>width: 100%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>padding: 16px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>border-radius: 16px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>border: none;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>font-size: 18px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>margin-top: 10px;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.up {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>background: #34d399;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.down-btn {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>background: #ec4899;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">/* BOTTOM NAV */</span></p>
-<p class="p1"><span class="s1">.nav {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>position: fixed;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>bottom: 0;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>width: 100%;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>background: #1a1a2a;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>display: flex;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>justify-content: space-around;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>padding: 12px 0;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.nav div {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>font-size: 14px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>color: #aaa;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.nav .active {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>color: #a78bfa;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p1"><span class="s1">&lt;/style&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;body&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;div class="header"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div&gt;🐰&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="connect"&gt;Подключиться&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;div class="tabs"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="tab active"&gt;Прогноз&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="tab"&gt;Лотерея&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;div class="price-box"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div&gt;₿&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="price"&gt;$89,845.57&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div style="color:#aaa"&gt;BTCUSD&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;div class="timer"&gt;⏱ 01:19 · 5 мин&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;div class="card"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="card-title"&gt;ВВЕРХ&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="sub"&gt;2.23x Выплата&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="inner"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div&gt;Цена закрытия&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="big"&gt;$89,711.03&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="row"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span&gt;Зафиксированная&lt;/span&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span&gt;$89,874.42&lt;/span&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="row"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span&gt;Призовой пул&lt;/span&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span&gt;0.0097 BNB&lt;/span&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="down"&gt;1.81x ВНИЗ&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;div class="actions"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div style="text-align:center;color:#aaa"&gt;Призовой пул: &amp;lt;0.0001 BNB&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;button class="btn up"&gt;Занять ВВЕРХ&lt;/button&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;button class="btn down-btn"&gt;Занять НИЗ&lt;/button&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;div class="nav"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div&gt;Сделки&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div&gt;Бессрочные&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div&gt;Заработать&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="active"&gt;Играть&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;script&gt;</span></p>
-<p class="p1"><span class="s1">Telegram.WebApp.ready();</span></p>
-<p class="p1"><span class="s1">Telegram.WebApp.expand();</span></p>
-<p class="p1"><span class="s1">&lt;/script&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
+
+<div class="header">
+    <div>🐰</div>
+    <div class="connect">Подключиться</div>
+</div>
+
+<div class="tabs">
+    <div class="tab active">Прогноз</div>
+    <div class="tab">Лотерея</div>
+</div>
+
+<div class="pairs">
+    <div class="pair active" onclick="setPair('BTCUSDT')">BTC</div>
+    <div class="pair" onclick="setPair('ETHUSDT')">ETH</div>
+    <div class="pair" onclick="setPair('BNBUSDT')">BNB</div>
+</div>
+
+<div class="price-box">
+    <div class="price" id="price">—</div>
+    <div id="symbol">BTCUSDT</div>
+</div>
+
+<div class="timer" id="timer">⏱ 05:00</div>
+
+<div class="card">
+    <div class="card-title">ВВЕРХ</div>
+    <div class="sub">2.0x Выплата</div>
+
+    <div class="inner">
+        <div>Цена закрытия</div>
+        <div class="big" id="closePrice">—</div>
+        <div class="row">
+            <span>Зафиксирована</span>
+            <span id="startPrice">—</span>
+        </div>
+    </div>
+</div>
+
+<div class="actions">
+    <button class="btn up">Занять ВВЕРХ</button>
+    <button class="btn down">Занять ВНИЗ</button>
+</div>
+
+<div class="nav">
+    <div>Сделки</div>
+    <div>Бессрочные</div>
+    <div>Заработать</div>
+    <div style="color:#a78bfa">Играть</div>
+</div>
+
+<script>
+Telegram.WebApp.ready();
+Telegram.WebApp.expand();
+
+let symbol = 'BTCUSDT';
+let startPrice = 0;
+let timeLeft = 300;
+
+function setPair(pair) {
+    symbol = pair;
+    document.getElementById('symbol').innerText = pair;
+    document.querySelectorAll('.pair').forEach(p => p.classList.remove('active'));
+    event.target.classList.add('active');
+    startRound();
+}
+
+async function fetchPrice() {
+    const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
+    const data = await res.json();
+    return parseFloat(data.price);
+}
+
+async function startRound() {
+    timeLeft = 300;
+    startPrice = await fetchPrice();
+    document.getElementById('startPrice').innerText = startPrice.toFixed(2);
+}
+
+setInterval(async () => {
+    const price = await fetchPrice();
+    document.getElementById('price').innerText = `$${price.toFixed(2)}`;
+    document.getElementById('closePrice').innerText = `$${price.toFixed(2)}`;
+}, 2000);
+
+setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) startRound();
+    const m = String(Math.floor(timeLeft / 60)).padStart(2,'0');
+    const s = String(timeLeft % 60).padStart(2,'0');
+    document.getElementById('timer').innerText = `⏱ ${m}:${s}`;
+}, 1000);
+
+startRound();
+</script>
+
 </body>
 </html>
