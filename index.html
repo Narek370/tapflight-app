@@ -2,315 +2,525 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TapFlight — Прогноз</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini App Prediction</title>
   <style>
     :root {
-      --bg: #0b0b14;
-      --surface: #151626;
-      --surface-2: #1b1c2f;
-      --surface-3: #22243b;
-      --text: #eef0ff;
-      --muted: #9aa0c4;
-      --accent: #9b5cff;
-      --accent-2: #5ee2ff;
-      --up: #34d399;
-      --down: #f472b6;
-      --warning: #facc15;
-      --border: rgba(255, 255, 255, 0.08);
-      --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-      --radius-xl: 24px;
-      --radius-lg: 18px;
-      --radius-md: 14px;
-      --radius-sm: 10px;
+      --bg-header: #1E1C22;
+      --bg-surface: #27262C;
+      --bg-page-1: #474677;
+      --bg-page-2: #4B497A;
+      --text: #F4EEFF;
+      --text-subtle: #B8ADD2;
+      --text-muted: #A198B8;
+      --accent-purple: #A881FC;
+      --accent-teal: #1FC7D4;
+      --accent-green: #31D0AA;
+      --accent-pink: #ED4B9E;
+      --lavender-btn: #B8ADD2;
     }
 
     * {
       box-sizing: border-box;
-      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg-page-1);
+      color: var(--text);
+      font-family: "Inter", "SF Pro Display", "Segoe UI", sans-serif;
     }
 
     body {
-      margin: 0;
-      min-height: 100vh;
-      background: radial-gradient(circle at top, #1b1d33 0%, #0b0b14 45%, #08080f 100%);
-      color: var(--text);
-      padding-bottom: 96px;
+      overflow: hidden;
     }
 
     .app {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 0 16px 32px;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #4B497A 0%, #474677 45%, #474677 100%);
+      position: relative;
+      padding-bottom: 96px;
     }
 
-    header {
+    .sticky-header {
       position: sticky;
       top: 0;
       z-index: 10;
-      background: rgba(11, 11, 20, 0.9);
-      backdrop-filter: blur(16px);
-      padding: 18px 0 12px;
+      background: var(--bg-header);
+      padding: 12px 16px 18px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
     }
 
-    .topbar {
+    .top-row {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 0 16px 10px;
+      gap: 10px;
     }
 
-    .avatar {
-      width: 40px;
-      height: 40px;
+    .logo {
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      background: linear-gradient(140deg, #3b82f6, #a855f7);
+      background: #F2B64D;
       display: grid;
       place-items: center;
-      box-shadow: var(--shadow);
+      color: #6B3E00;
+      font-weight: 700;
+      font-size: 18px;
     }
 
-    .avatar svg {
-      width: 22px;
-      height: 22px;
+    .gear {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: #2D2B34;
+      display: grid;
+      place-items: center;
+    }
+
+    .gear svg {
+      width: 18px;
+      height: 18px;
+      fill: var(--text-subtle);
+    }
+
+    .chain-pill {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #2D2B34;
+      border-radius: 18px;
+      padding: 6px 12px;
+    }
+
+    .chain-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #111014;
+      display: grid;
+      place-items: center;
+    }
+
+    .chain-icon span {
+      width: 12px;
+      height: 12px;
+      background: #F5D96C;
+      border-radius: 3px;
+      display: block;
+      transform: rotate(45deg);
+    }
+
+    .chain-pill strong {
+      font-size: 13px;
+      color: var(--text-subtle);
+      letter-spacing: 0.2px;
     }
 
     .connect-btn {
-      background: linear-gradient(135deg, var(--accent-2), #8af7ff);
-      color: #07131e;
+      background: var(--accent-teal);
+      color: #0F2C2C;
       border: none;
-      border-radius: 999px;
-      padding: 10px 18px;
+      border-radius: 16px;
+      padding: 8px 14px;
       font-weight: 700;
       font-size: 14px;
-      cursor: pointer;
-      box-shadow: 0 12px 20px rgba(94, 226, 255, 0.4);
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25);
     }
 
     .tabs {
+      margin-top: 14px;
       display: flex;
-      justify-content: center;
-      gap: 40px;
-      font-size: 16px;
-      color: var(--muted);
+      gap: 24px;
+      font-size: 18px;
+      font-weight: 600;
     }
 
-    .tab.active {
-      color: var(--text);
+    .tabs span {
+      color: var(--text-muted);
       position: relative;
-      font-weight: 700;
+      padding-bottom: 10px;
     }
 
-    .tab.active::after {
+    .tabs .active {
+      color: var(--accent-purple);
+    }
+
+    .tabs .active::after {
       content: "";
       position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: -10px;
-      width: 46px;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-2));
-      border-radius: 999px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 4px;
+      border-radius: 4px;
+      background: var(--accent-teal);
     }
 
-    .pair-switch {
+    .pair-bar {
       margin-top: 16px;
+      background: #3B3950;
+      border-radius: 24px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pair-main {
+      flex: 1;
+      background: #111015;
+      border-radius: 20px;
+      padding: 10px 14px;
+      border: 2px solid #5A4E74;
+      box-shadow: inset 0 0 0 1px #362E44;
       display: flex;
       gap: 10px;
-      padding: 0 16px;
+      align-items: center;
     }
 
-    .pair {
-      flex: 1;
-      background: var(--surface);
-      border-radius: 12px;
-      padding: 10px 0;
-      text-align: center;
-      color: var(--muted);
-      border: 1px solid transparent;
-      font-weight: 600;
-      cursor: pointer;
+    .coin {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #F4A62A;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 700;
+      font-size: 22px;
+      position: relative;
     }
 
-    .pair.active {
-      background: linear-gradient(135deg, rgba(94, 226, 255, 0.2), rgba(155, 92, 255, 0.2));
-      color: var(--text);
-      border-color: rgba(94, 226, 255, 0.35);
+    .coin::after {
+      content: "";
+      position: absolute;
+      bottom: -6px;
+      right: -4px;
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      background: #111015;
+      border: 2px solid #F4C542;
     }
 
-    .price-card {
-      margin: 16px;
-      background: var(--surface-2);
-      border-radius: var(--radius-lg);
-      padding: 16px;
+    .pair-info {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
+      flex-direction: column;
     }
 
-    .price-card h2 {
-      margin: 0;
-      font-size: 28px;
+    .pair-info .price {
+      font-size: 22px;
+      font-weight: 800;
+      color: #C0B1FF;
     }
 
-    .price-meta {
-      text-align: right;
-    }
-
-    .price-meta span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .timer {
-      margin: 0 16px;
-      background: var(--surface-3);
-      border-radius: 12px;
-      padding: 10px 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+    .pair-info .pair {
+      color: var(--text-subtle);
       font-weight: 600;
+      letter-spacing: 0.4px;
+    }
+
+    .pair-token {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #E9C65F;
+      display: grid;
+      place-items: center;
+      color: #4B3A00;
+      font-weight: 800;
+    }
+
+    .pair-token.secondary {
+      background: #E4E4E4;
+      color: #2A2A2A;
+    }
+
+    .timer-row {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .timer-pill {
+      background: #2D2B34;
+      border-radius: 20px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 140px;
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2);
+    }
+
+    .timer-pill .time {
+      font-weight: 700;
+      color: #B890FF;
+      font-size: 16px;
+    }
+
+    .timer-pill .label {
+      font-size: 14px;
+      color: var(--text-subtle);
+    }
+
+    .timer-pill .clock {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #F5D55C;
+      display: grid;
+      place-items: center;
+      color: #5A3C00;
+      font-weight: 700;
+      position: relative;
+    }
+
+    .timer-pill .clock::after {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 2px;
+      background: #8A5E00;
+      transform: rotate(-25deg);
+    }
+
+    .quick-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .quick-btn {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      background: #B5AECF;
+      display: grid;
+      place-items: center;
+      color: #F3F0FF;
+      font-weight: 700;
+      font-size: 20px;
+      box-shadow: inset 0 -3px 0 rgba(0,0,0,0.15);
+    }
+
+    .content {
+      padding: 20px 0 120px;
+      overflow: hidden;
     }
 
     .carousel {
-      margin-top: 20px;
-      padding-left: 16px;
       display: flex;
-      gap: 14px;
+      gap: 20px;
+      padding: 18px 24px 24px;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
-      padding-bottom: 12px;
     }
 
     .carousel::-webkit-scrollbar {
-      height: 6px;
+      display: none;
     }
 
-    .carousel::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 999px;
-    }
-
-    .prediction-card {
-      min-width: 280px;
-      background: var(--surface-2);
-      border-radius: var(--radius-xl);
+    .round-card {
+      flex: 0 0 78%;
+      max-width: 78%;
+      background: #343140;
+      border-radius: 24px;
       padding: 16px;
-      border: 1px solid var(--border);
-      scroll-snap-align: start;
+      color: var(--text-subtle);
+      scroll-snap-align: center;
+      box-shadow: inset 0 0 0 2px #463F58;
       position: relative;
-      box-shadow: var(--shadow);
     }
 
-    .prediction-card.active {
-      outline: 2px solid rgba(94, 226, 255, 0.5);
-      background: linear-gradient(160deg, rgba(94, 226, 255, 0.1), rgba(155, 92, 255, 0.12));
-    }
-
-    .card-label {
-      font-size: 12px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .status {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      font-size: 12px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    .status.active { color: var(--accent-2); }
-    .status.next { color: var(--accent); }
-    .status.later { color: var(--warning); }
-    .status.expired { color: #f87171; }
-
-    .card-price {
-      font-size: 26px;
-      font-weight: 700;
-      margin: 14px 0 6px;
-    }
-
-    .card-sub {
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 14px;
-    }
-
-    .card-data {
-      background: rgba(9, 10, 18, 0.45);
-      border-radius: var(--radius-md);
-      padding: 12px;
-      display: grid;
-      gap: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .card-row {
+    .round-card .header {
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .actions {
-      margin: 20px 16px 10px;
-      background: var(--surface-2);
-      border-radius: var(--radius-xl);
-      padding: 16px;
-      display: grid;
-      gap: 12px;
-      border: 1px solid var(--border);
-    }
-
-    .action-btn {
-      border: none;
-      border-radius: 16px;
-      padding: 16px;
-      font-size: 16px;
       font-weight: 700;
-      color: #041312;
-      cursor: pointer;
+      font-size: 14px;
+      text-transform: uppercase;
+      color: #CBB6FF;
+      padding-bottom: 12px;
+    }
+
+    .round-card .status {
       display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .round-card .status span {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      font-size: 10px;
     }
 
-    .action-btn.up { background: linear-gradient(135deg, #8dffc1, #34d399); }
-    .action-btn.down { background: linear-gradient(135deg, #fca5a5, #f472b6); }
+    .round-card .body {
+      background: #2A2834;
+      border-radius: 18px;
+      padding: 18px;
+      text-align: center;
+      color: var(--text);
+      border: 2px solid #4C4560;
+    }
 
-    .chainlink {
-      position: fixed;
-      bottom: 92px;
-      right: 16px;
-      background: rgba(11, 11, 20, 0.9);
-      border: 1px solid var(--border);
-      border-radius: 999px;
+    .round-card .body h3 {
+      font-size: 22px;
+      color: var(--accent-green);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .round-card .body .multiplier {
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .round-card .price-box {
+      background: #2D2B34;
+      border-radius: 16px;
+      padding: 14px;
+      border: 2px solid #4B4660;
+      text-align: left;
+      margin: 12px 0;
+    }
+
+    .round-card .price-box strong {
+      font-size: 24px;
+      color: var(--accent-green);
+    }
+
+    .round-card .price-box .delta {
+      float: right;
+      background: #39C9A6;
+      color: #1B2320;
       padding: 8px 12px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    .round-card .meta {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .round-card .footer-tag {
+      margin-top: 14px;
+      background: #3B394A;
+      border-radius: 16px;
+      padding: 12px;
+      font-weight: 700;
+      color: #D4C7FF;
+    }
+
+    .round-card.active {
+      border: 2px solid #7F77A8;
+    }
+
+    .round-card.active .body {
+      border-color: #52E1C0;
+    }
+
+    .round-card.active .header {
+      color: #C7B0FF;
+      border-bottom: 4px solid #8C6AF3;
+      padding-bottom: 10px;
+    }
+
+    .round-card.next .header {
+      color: #DCC5FF;
+    }
+
+    .round-card.later .header {
+      color: #CFC5E8;
+    }
+
+    .round-card.expired .body {
+      border-color: #D161A2;
+      background: #352C3E;
+    }
+
+    .round-card.expired .price-box strong {
+      color: #E46AAE;
+    }
+
+    .round-card.expired .delta {
+      background: #B54A88;
+      color: #F9E8F2;
+    }
+
+    .round-card.later .body {
+      background: #2F2E3A;
+      color: var(--text-muted);
+    }
+
+    .round-card.later .body h3 {
+      color: #9B9BB1;
+    }
+
+    .round-card.next .body {
+      background: #2E2D3A;
+    }
+
+    .round-card.next .cta {
+      display: grid;
+      gap: 10px;
+    }
+
+    .round-card.next button {
+      border: none;
+      border-radius: 16px;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #1D2524;
+    }
+
+    .round-card.next .up {
+      background: #32D0AA;
+    }
+
+    .round-card.next .down {
+      background: #ED4B9E;
+      color: #FFF;
+    }
+
+    .chainlink-badge {
+      position: fixed;
+      right: 14px;
+      bottom: 78px;
+      background: #111015;
+      border-radius: 18px;
+      padding: 10px 12px;
+      border: 2px solid #4F4A62;
       display: flex;
       align-items: center;
       gap: 8px;
+      color: var(--text-subtle);
       font-size: 12px;
-      font-weight: 600;
       z-index: 12;
-      box-shadow: var(--shadow);
+      box-shadow: 0 8px 12px rgba(0,0,0,0.35);
     }
 
-    .chainlink svg {
-      width: 20px;
-      height: 20px;
+    .chainlink-badge .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      background: #56E0C5;
     }
 
     .bottom-nav {
@@ -318,330 +528,442 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(14, 15, 26, 0.95);
+      background: #1F1D26;
+      padding: 10px 8px 20px;
       display: flex;
       justify-content: space-around;
-      padding: 12px 8px 22px;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid #2E2C35;
       z-index: 11;
     }
 
-    .nav-item {
-      color: var(--muted);
-      display: grid;
-      gap: 4px;
+    .bottom-nav .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       font-size: 11px;
+      color: var(--text-muted);
+      gap: 6px;
+    }
+
+    .bottom-nav .nav-item .icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      background: #2E2B38;
+      display: grid;
+      place-items: center;
+      color: var(--text-muted);
+    }
+
+    .bottom-nav .nav-item.active {
+      color: var(--accent-purple);
+      font-weight: 700;
+    }
+
+    .bottom-nav .nav-item.active .icon {
+      background: #3B2B52;
+      color: var(--accent-purple);
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 8, 14, 0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #2A2736;
+      padding: 24px;
+      border-radius: 20px;
       text-align: center;
+      width: min(280px, 80%);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.4);
     }
 
-    .nav-item svg {
-      width: 22px;
-      height: 22px;
-      margin: 0 auto;
+    .modal-card h2 {
+      font-size: 20px;
+      margin-bottom: 8px;
     }
 
-    .nav-item.active { color: var(--accent-2); }
+    .modal-card p {
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .modal-card button {
+      background: var(--accent-teal);
+      color: #1A2A2A;
+      border: none;
+      border-radius: 14px;
+      padding: 10px 18px;
+      font-weight: 700;
+    }
 
     .overlay {
       position: fixed;
       inset: 0;
-      z-index: 30;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.25);
       pointer-events: none;
+      z-index: 30;
+      opacity: 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
     }
-
-    .overlay.active { display: flex; }
 
     .overlay img {
-      width: min(100%, 480px);
+      max-width: 100%;
       max-height: 100%;
-      object-fit: contain;
-      opacity: var(--overlay-opacity, 0.6);
+      transform: translate(var(--overlay-x, 0px), var(--overlay-y, 0px));
     }
 
-    .overlay-hint {
+    .overlay-controls {
       position: fixed;
-      top: 70px;
-      right: 16px;
-      background: rgba(0, 0, 0, 0.55);
-      color: #fff;
-      font-size: 11px;
+      top: 14px;
+      right: 12px;
+      background: rgba(0,0,0,0.55);
       padding: 8px 10px;
       border-radius: 10px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
       z-index: 31;
-      display: none;
+      color: var(--text);
     }
 
-    .overlay-hint.active { display: block; }
+    .overlay-controls input {
+      width: 80px;
+    }
+
+    @media (min-width: 720px) {
+      .round-card {
+        flex: 0 0 360px;
+        max-width: 360px;
+      }
+      .carousel {
+        justify-content: center;
+      }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div class="topbar">
-      <div class="avatar" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M5 12c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="#fff" stroke-width="2"/>
-          <path d="M7 18c1.5-2 3.25-3 5-3s3.5 1 5 3" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-        </svg>
+  <div class="app">
+    <header class="sticky-header">
+      <div class="top-row">
+        <div class="logo">🐰</div>
+        <div class="gear" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6zm9.4 3.3-1.9-.3a7.2 7.2 0 0 0-.6-1.6l1.1-1.6-1.7-1.7-1.6 1.1a7.2 7.2 0 0 0-1.6-.6l-.3-1.9h-2.4l-.3 1.9a7.2 7.2 0 0 0-1.6.6L8.3 5.3 6.6 7l1.1 1.6c-.3.5-.5 1-.6 1.6l-1.9.3v2.4l1.9.3c.1.6.3 1.1.6 1.6L6.6 17l1.7 1.7 1.6-1.1c.5.3 1 .5 1.6.6l.3 1.9h2.4l.3-1.9c.6-.1 1.1-.3 1.6-.6l1.6 1.1 1.7-1.7-1.1-1.6c.3-.5.5-1 .6-1.6l1.9-.3z"/></svg>
+        </div>
+        <div class="chain-pill">
+          <div class="chain-icon"><span></span></div>
+          <strong>Chain</strong>
+          <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" stroke="#B8ADD2" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        </div>
+        <button class="connect-btn" id="connectBtn">Подключиться</button>
       </div>
-      <button class="connect-btn">Подключиться</button>
-    </div>
-    <div class="tabs">
-      <div class="tab active">Прогноз</div>
-      <div class="tab">Лотерея</div>
-    </div>
-  </header>
 
-  <main class="app">
-    <section class="pair-switch" aria-label="Выбор пары">
-      <button class="pair active" data-symbol="BTCUSDT">BTC</button>
-      <button class="pair" data-symbol="ETHUSDT">ETH</button>
-      <button class="pair" data-symbol="BNBUSDT">BNB</button>
-    </section>
-
-    <section class="price-card">
-      <div>
-        <h2 id="price">$62,482.10</h2>
-        <div class="card-sub" id="price-change">+1.32% за 24ч</div>
+      <div class="tabs">
+        <span class="active">Прогноз</span>
+        <span>Лотерея</span>
       </div>
-      <div class="price-meta">
-        <strong id="symbol">BTCUSDT</strong>
-        <span>Oracle: Chainlink</span>
-      </div>
-    </section>
 
-    <div class="timer" id="timer">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <circle cx="12" cy="12" r="9" stroke="#9aa0c4" stroke-width="2"/>
-        <path d="M12 7v6l4 2" stroke="#9aa0c4" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      <span>Раунд закрывается через</span>
-      <strong id="timer-value">04:57</strong>
+      <div class="pair-bar">
+        <div class="pair-main">
+          <div class="coin">₿</div>
+          <div class="pair-info">
+            <div class="price" id="priceValue">$89,845.57</div>
+            <div class="pair">BTCUSD</div>
+          </div>
+        </div>
+        <div class="pair-token">BNB</div>
+        <div class="pair-token secondary">ETH</div>
+      </div>
+
+      <div class="timer-row">
+        <div class="timer-pill">
+          <div>
+            <div class="time" id="timerValue">01:23</div>
+            <div class="label">5мин</div>
+          </div>
+          <div class="clock">⏱</div>
+        </div>
+        <div class="quick-buttons">
+          <div class="quick-btn">?</div>
+          <div class="quick-btn">🏆</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="carousel" id="carousel">
+        <article class="round-card active">
+          <div class="header">
+            <div class="status"><span>▶</span>Активно</div>
+            <div>#38274</div>
+          </div>
+          <div class="body">
+            <h3>Вверх</h3>
+            <div class="multiplier">1.57x Выплата</div>
+            <div class="price-box">
+              <div>Последняя цена</div>
+              <strong id="activePrice">$89,845.57</strong>
+              <div class="delta" id="deltaValue">↑ $134.53</div>
+              <div class="meta">
+                <span>Зафиксированная цена:</span>
+                <span>$89 711,03</span>
+              </div>
+              <div class="meta">
+                <span>Призовой пул:</span>
+                <span>0.0055 BNB</span>
+              </div>
+            </div>
+            <div class="footer-tag">2.75x Выплата ВНИЗ</div>
+          </div>
+        </article>
+
+        <article class="round-card next">
+          <div class="header">
+            <div class="status"><span>▶</span>Следующий</div>
+            <div>#38275</div>
+          </div>
+          <div class="body">
+            <h3>Вверх</h3>
+            <div class="multiplier">0x Выплата</div>
+            <div class="price-box">
+              <div class="meta">
+                <span>Призовой пул:</span>
+                <span>&lt;0.0001 BNB</span>
+              </div>
+            </div>
+            <div class="cta">
+              <button class="up">Занять ВЕРХ</button>
+              <button class="down">Занять НИЗ</button>
+            </div>
+            <div class="footer-tag">0x Выплата ВНИЗ</div>
+          </div>
+        </article>
+
+        <article class="round-card later">
+          <div class="header">
+            <div class="status"><span>⏲</span>Позже</div>
+            <div>#38276</div>
+          </div>
+          <div class="body">
+            <h3>Вверх</h3>
+            <div class="multiplier">Начало входа</div>
+            <div class="price-box">
+              <strong>~01:12</strong>
+            </div>
+            <div class="footer-tag">ВНИЗ</div>
+          </div>
+        </article>
+
+        <article class="round-card expired">
+          <div class="header">
+            <div class="status"><span>⊘</span>Срок истек</div>
+            <div>#38273</div>
+          </div>
+          <div class="body">
+            <h3>Вверх</h3>
+            <div class="multiplier">2.23x Выплата</div>
+            <div class="price-box">
+              <div>Цена закрытия</div>
+              <strong>$89 711,03</strong>
+              <div class="delta">↓ $-163,39</div>
+              <div class="meta">
+                <span>Зафиксированная цена:</span>
+                <span>$89 874,42</span>
+              </div>
+              <div class="meta">
+                <span>Призовой пул:</span>
+                <span>0.0097 BNB</span>
+              </div>
+            </div>
+            <div class="footer-tag">1.81x Выплата ВНИЗ</div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <div class="chainlink-badge">
+      <span class="dot"></span>
+      Chainlink
     </div>
 
-    <section class="carousel" aria-label="Карусель прогнозов">
-      <article class="prediction-card active">
-        <div class="card-label">Up trend</div>
-        <div class="status active">Active</div>
-        <div class="card-price" id="active-price">$62,482.10</div>
-        <div class="card-sub">2.0x Выплата</div>
-        <div class="card-data">
-          <div class="card-row"><span>Цена закрытия</span><strong id="close-price">$62,520.00</strong></div>
-          <div class="card-row"><span>Зафиксирована</span><strong id="start-price">$62,410.55</strong></div>
-          <div class="card-row"><span>Объем пула</span><strong>$48,120</strong></div>
-        </div>
-      </article>
-
-      <article class="prediction-card">
-        <div class="card-label">Готовится</div>
-        <div class="status next">Next</div>
-        <div class="card-price">$62,530.00</div>
-        <div class="card-sub">Старт через 02:10</div>
-        <div class="card-data">
-          <div class="card-row"><span>Up pool</span><strong>$18,400</strong></div>
-          <div class="card-row"><span>Down pool</span><strong>$21,900</strong></div>
-          <div class="card-row"><span>Мультипликатор</span><strong>2.1x</strong></div>
-        </div>
-      </article>
-
-      <article class="prediction-card">
-        <div class="card-label">Запланировано</div>
-        <div class="status later">Later</div>
-        <div class="card-price">$62,740.40</div>
-        <div class="card-sub">Через 15:00</div>
-        <div class="card-data">
-          <div class="card-row"><span>Up pool</span><strong>$12,900</strong></div>
-          <div class="card-row"><span>Down pool</span><strong>$10,440</strong></div>
-          <div class="card-row"><span>Шанс</span><strong>56%</strong></div>
-        </div>
-      </article>
-
-      <article class="prediction-card">
-        <div class="card-label">Закрыт</div>
-        <div class="status expired">Expired</div>
-        <div class="card-price">$61,980.25</div>
-        <div class="card-sub">Раунд завершен</div>
-        <div class="card-data">
-          <div class="card-row"><span>Результат</span><strong>UP</strong></div>
-          <div class="card-row"><span>Выплата</span><strong>2.3x</strong></div>
-          <div class="card-row"><span>Пул</span><strong>$40,320</strong></div>
-        </div>
-      </article>
-    </section>
-
-    <section class="actions">
-      <button class="action-btn up">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M12 5l6 8h-4v6H10v-6H6l6-8z" fill="#0b1f19"/>
-        </svg>
-        Занять ВВЕРХ
-      </button>
-      <button class="action-btn down">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M12 19l-6-8h4V5h4v6h4l-6 8z" fill="#2b0f1f"/>
-        </svg>
-        Занять ВНИЗ
-      </button>
-    </section>
-  </main>
-
-  <div class="chainlink">
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M12 2l8.66 5v10L12 22l-8.66-5V7L12 2z" stroke="#5ee2ff" stroke-width="2"/>
-      <path d="M12 7l4.33 2.5v5L12 17l-4.33-2.5v-5L12 7z" fill="#5ee2ff"/>
-    </svg>
-    Chainlink Oracle
+    <nav class="bottom-nav">
+      <div class="nav-item">
+        <div class="icon">⛓</div>
+        Сделки
+      </div>
+      <div class="nav-item">
+        <div class="icon">🔒</div>
+        Бессрочные...
+      </div>
+      <div class="nav-item">
+        <div class="icon">💰</div>
+        Заработать
+      </div>
+      <div class="nav-item">
+        <div class="icon">🪄</div>
+        Прогноз...
+      </div>
+      <div class="nav-item active">
+        <div class="icon">🎮</div>
+        Играть
+      </div>
+      <div class="nav-item">
+        <div class="icon">⋯</div>
+        Еще
+      </div>
+    </nav>
   </div>
 
-  <nav class="bottom-nav">
-    <div class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M4 7h16v10H4z" stroke="currentColor" stroke-width="2"/>
-        <path d="M8 11h8" stroke="currentColor" stroke-width="2"/>
-      </svg>
-      Сделки
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <h2>Скоро</h2>
+      <p>Подключение кошелька будет доступно позже.</p>
+      <button id="closeModal">Закрыть</button>
     </div>
-    <div class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M12 3l7 4v10l-7 4-7-4V7l7-4z" stroke="currentColor" stroke-width="2"/>
-      </svg>
-      Бессрочные
-    </div>
-    <div class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/>
-        <path d="M12 8v4l2 2" stroke="currentColor" stroke-width="2"/>
-      </svg>
-      Заработать
-    </div>
-    <div class="nav-item active">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M5 6h14l-2 12H7L5 6z" stroke="currentColor" stroke-width="2"/>
-        <path d="M9 10h6" stroke="currentColor" stroke-width="2"/>
-      </svg>
-      Играть
-    </div>
-  </nav>
+  </div>
 
   <div class="overlay" id="overlay">
-    <img id="overlay-image" alt="reference" src="https://placehold.co/480x960/png" />
+    <img id="overlayImg" src="/spec/IMG_8671.PNG" alt="Overlay" />
   </div>
-  <div class="overlay-hint" id="overlay-hint">Overlay O / 1-4 / +/-</div>
+  <div class="overlay-controls" id="overlayControls" style="display:none;">
+    <span>Overlay</span>
+    <input id="overlayOpacity" type="range" min="0" max="1" step="0.05" value="0.4" />
+    <span id="overlayOpacityValue">0.40</span>
+  </div>
 
-  <script type="module">
-    const webApp = window.Telegram?.WebApp;
-    if (webApp) {
-      webApp.ready();
-      webApp.expand();
-    }
+  <script>
+    const connectBtn = document.getElementById('connectBtn');
+    const modal = document.getElementById('modal');
+    const closeModal = document.getElementById('closeModal');
+    const timerValue = document.getElementById('timerValue');
+    const priceValue = document.getElementById('priceValue');
+    const activePrice = document.getElementById('activePrice');
+    const deltaValue = document.getElementById('deltaValue');
+    const overlay = document.getElementById('overlay');
+    const overlayImg = document.getElementById('overlayImg');
+    const overlayControls = document.getElementById('overlayControls');
+    const overlayOpacity = document.getElementById('overlayOpacity');
+    const overlayOpacityValue = document.getElementById('overlayOpacityValue');
 
-    const pairs = document.querySelectorAll('.pair');
-    const symbolEl = document.getElementById('symbol');
-    const priceEl = document.getElementById('price');
-    const changeEl = document.getElementById('price-change');
-    const timerValue = document.getElementById('timer-value');
-    const startPriceEl = document.getElementById('start-price');
-    const closePriceEl = document.getElementById('close-price');
-    const activePriceEl = document.getElementById('active-price');
-
-    const basePrices = {
-      BTCUSDT: 62482.1,
-      ETHUSDT: 3482.4,
-      BNBUSDT: 612.8,
-    };
-
-    let currentSymbol = 'BTCUSDT';
-    let timer = 300;
-    let mockPrice = basePrices[currentSymbol];
-
-    const formatPrice = (value) =>
-      `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-    const updatePrice = () => {
-      const jitter = (Math.random() - 0.5) * (currentSymbol === 'BTCUSDT' ? 120 : 8);
-      mockPrice = Math.max(1, mockPrice + jitter);
-      const delta = ((mockPrice - basePrices[currentSymbol]) / basePrices[currentSymbol]) * 100;
-      priceEl.textContent = formatPrice(mockPrice);
-      activePriceEl.textContent = formatPrice(mockPrice);
-      closePriceEl.textContent = formatPrice(mockPrice + (Math.random() - 0.5) * 40);
-      changeEl.textContent = `${delta >= 0 ? '+' : ''}${delta.toFixed(2)}% за 24ч`;
-    };
+    let seconds = 83;
+    let price = 89845.57;
+    let delta = 134.53;
+    let overlayVisible = false;
+    let overlayIndex = 0;
+    const overlaySources = [
+      '/spec/IMG_8671.PNG',
+      '/spec/IMG_8672.PNG',
+      '/spec/IMG_8674.PNG',
+      '/spec/IMG_8673.PNG'
+    ];
+    let overlayOffsetX = 0;
+    let overlayOffsetY = 0;
 
     const updateTimer = () => {
-      timer = timer <= 0 ? 300 : timer - 1;
-      const minutes = String(Math.floor(timer / 60)).padStart(2, '0');
-      const seconds = String(timer % 60).padStart(2, '0');
-      timerValue.textContent = `${minutes}:${seconds}`;
-      if (timer === 300) {
-        startPriceEl.textContent = formatPrice(mockPrice - (Math.random() * 100));
-      }
+      seconds = (seconds - 1 + 300) % 300;
+      const min = String(Math.floor(seconds / 60)).padStart(2, '0');
+      const sec = String(seconds % 60).padStart(2, '0');
+      timerValue.textContent = `${min}:${sec}`;
     };
 
-    const setPair = (symbol, button) => {
-      currentSymbol = symbol;
-      pairs.forEach((item) => item.classList.remove('active'));
-      button.classList.add('active');
-      symbolEl.textContent = symbol;
-      mockPrice = basePrices[symbol];
-      updatePrice();
+    const updatePrice = () => {
+      const change = (Math.random() - 0.5) * 8;
+      price = Math.max(89000, price + change);
+      delta += change;
+      const formatted = price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      priceValue.textContent = `$${formatted}`;
+      activePrice.textContent = `$${formatted}`;
+      const deltaSign = delta >= 0 ? '↑' : '↓';
+      deltaValue.textContent = `${deltaSign} $${Math.abs(delta).toFixed(2)}`;
+      deltaValue.style.background = delta >= 0 ? '#39C9A6' : '#B54A88';
+      deltaValue.style.color = delta >= 0 ? '#1B2320' : '#F9E8F2';
     };
 
-    pairs.forEach((btn) => {
-      btn.addEventListener('click', () => setPair(btn.dataset.symbol, btn));
+    connectBtn.addEventListener('click', () => {
+      modal.classList.add('active');
     });
 
-    setInterval(updatePrice, 2200);
-    setInterval(updateTimer, 1000);
-    updatePrice();
-    updateTimer();
+    closeModal.addEventListener('click', () => {
+      modal.classList.remove('active');
+    });
 
-    const overlay = document.getElementById('overlay');
-    const overlayImage = document.getElementById('overlay-image');
-    const overlayHint = document.getElementById('overlay-hint');
-    const overlaySources = [
-      'https://placehold.co/480x960/png?text=Reference+1',
-      'https://placehold.co/480x960/png?text=Reference+2',
-      'https://placehold.co/480x960/png?text=Reference+3',
-      'https://placehold.co/480x960/png?text=Reference+4',
-    ];
-    let overlayIndex = 0;
-    let overlayOpacity = 0.6;
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        modal.classList.remove('active');
+      }
+    });
 
-    const setOverlayState = (active) => {
-      overlay.classList.toggle('active', active);
-      overlayHint.classList.toggle('active', active);
+    overlayOpacity.addEventListener('input', (event) => {
+      const value = Number(event.target.value);
+      overlay.style.opacity = value;
+      overlayOpacityValue.textContent = value.toFixed(2);
+    });
+
+    const toggleOverlay = () => {
+      overlayVisible = !overlayVisible;
+      overlay.style.opacity = overlayVisible ? overlayOpacity.value : 0;
+      overlayControls.style.display = overlayVisible ? 'flex' : 'none';
     };
 
-    const setOverlayImage = (index) => {
+    const setOverlayIndex = (index) => {
       overlayIndex = index;
-      overlayImage.src = overlaySources[overlayIndex];
+      overlayImg.src = overlaySources[overlayIndex];
     };
 
-    const updateOverlayOpacity = (delta) => {
-      overlayOpacity = Math.min(1, Math.max(0.1, overlayOpacity + delta));
-      overlay.style.setProperty('--overlay-opacity', overlayOpacity.toFixed(2));
+    const setOverlayOffset = () => {
+      overlayImg.style.setProperty('--overlay-x', `${overlayOffsetX}px`);
+      overlayImg.style.setProperty('--overlay-y', `${overlayOffsetY}px`);
     };
 
-    window.addEventListener('keydown', (event) => {
+    document.addEventListener('keydown', (event) => {
       if (event.key === 'o' || event.key === 'O') {
-        setOverlayState(!overlay.classList.contains('active'));
+        toggleOverlay();
       }
       if (event.key >= '1' && event.key <= '4') {
-        setOverlayImage(Number(event.key) - 1);
+        setOverlayIndex(Number(event.key) - 1);
       }
       if (event.key === '+') {
-        updateOverlayOpacity(0.05);
+        overlayOpacity.value = Math.min(1, Number(overlayOpacity.value) + 0.05);
+        overlayOpacity.dispatchEvent(new Event('input'));
       }
       if (event.key === '-') {
-        updateOverlayOpacity(-0.05);
+        overlayOpacity.value = Math.max(0, Number(overlayOpacity.value) - 0.05);
+        overlayOpacity.dispatchEvent(new Event('input'));
+      }
+      if (event.key === 'ArrowUp') {
+        overlayOffsetY -= 1;
+        setOverlayOffset();
+      }
+      if (event.key === 'ArrowDown') {
+        overlayOffsetY += 1;
+        setOverlayOffset();
+      }
+      if (event.key === 'ArrowLeft') {
+        overlayOffsetX -= 1;
+        setOverlayOffset();
+      }
+      if (event.key === 'ArrowRight') {
+        overlayOffsetX += 1;
+        setOverlayOffset();
       }
     });
 
-    setOverlayImage(0);
-    updateOverlayOpacity(0);
+    setInterval(updateTimer, 1000);
+    setInterval(updatePrice, 1000);
+    updateTimer();
+    updatePrice();
   </script>
 </body>
 </html>
