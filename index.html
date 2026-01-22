@@ -1,997 +1,997 @@
-1	<!DOCTYPE html>
-     2	<html lang="ru">
-     3	<head>
-     4	  <meta charset="UTF-8" />
-     5	  <meta name="viewport" content="width=device-width, initial-scale=1" />
-     6	  <title>Прогноз - Telegram Mini App</title>
-     7	  <style>
-     8	    :root {
-     9	      --bg: #4a4a78;
-    10	      --bg-dark: #1f1f29;
-    11	      --bg-darker: #14141b;
-    12	      --card: #2b2b3a;
-    13	      --card-soft: #34344a;
-    14	      --card-border: #5e5e86;
-    15	      --accent: #a78bfa;
-    16	      --accent-bright: #36d6e2;
-    17	      --accent-green: #38d7a5;
-    18	      --accent-pink: #f04da4;
-    19	      --accent-yellow: #f7c64b;
-    20	      --text: #f2f2f7;
-    21	      --text-muted: #b9b7d6;
-    22	      --text-dim: #8e8bb0;
-    23	      --pill-dark: #2b2a3c;
-    24	      --shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-    25	      --radius: 20px;
-    26	      --radius-lg: 28px;
-    27	    }
-    28	
-    29	    * {
-    30	      box-sizing: border-box;
-    31	      margin: 0;
-    32	      padding: 0;
-    33	      font-family: "Inter", "Segoe UI", sans-serif;
-    34	    }
-    35	
-    36	    body {
-    37	      background: linear-gradient(180deg, #4b4a7d 0%, #464671 50%, #3f3f63 100%);
-    38	      color: var(--text);
-    39	      min-height: 100vh;
-    40	      padding-bottom: 120px;
-    41	    }
-    42	
-    43	    .app {
-    44	      max-width: 420px;
-    45	      margin: 0 auto;
-    46	      position: relative;
-    47	      padding-bottom: 120px;
-    48	    }
-    49	
-    50	    .sticky-zone {
-    51	      position: sticky;
-    52	      top: 0;
-    53	      z-index: 20;
-    54	      background: linear-gradient(180deg, #1f1f2b 0%, #2a2a3d 100%);
-    55	      box-shadow: 0 6px 20px rgba(12, 12, 20, 0.4);
-    56	    }
-    57	
-    58	    .top-bar {
-    59	      background: var(--bg-dark);
-    60	      padding: 12px 16px;
-    61	      display: flex;
-    62	      align-items: center;
-    63	      justify-content: space-between;
-    64	      gap: 12px;
-    65	      border-bottom: 1px solid #2d2d3f;
-    66	    }
-    67	
-    68	    .logo {
-    69	      display: flex;
-    70	      align-items: center;
-    71	      gap: 10px;
-    72	    }
-    73	
-    74	    .logo svg {
-    75	      width: 34px;
-    76	      height: 34px;
-    77	    }
-    78	
-    79	    .top-actions {
-    80	      display: flex;
-    81	      align-items: center;
-    82	      gap: 10px;
-    83	    }
-    84	
-    85	    .icon-btn {
-    86	      width: 34px;
-    87	      height: 34px;
-    88	      border-radius: 12px;
-    89	      background: #2a2a3a;
-    90	      border: 1px solid #3c3c54;
-    91	      display: grid;
-    92	      place-items: center;
-    93	      color: var(--text);
-    94	      cursor: pointer;
-    95	    }
-    96	
-    97	    .chain-pill {
-    98	      display: flex;
-    99	      align-items: center;
-   100	      gap: 6px;
-   101	      background: #2d2d3d;
-   102	      border-radius: 18px;
-   103	      padding: 6px 10px;
-   104	      border: 1px solid #3f3f57;
-   105	      color: var(--text);
-   106	      font-size: 12px;
-   107	    }
-   108	
-   109	    .connect-btn {
-   110	      background: var(--accent-bright);
-   111	      color: #0b1c1c;
-   112	      font-weight: 700;
-   113	      padding: 8px 16px;
-   114	      border-radius: 18px;
-   115	      border: none;
-   116	      cursor: pointer;
-   117	      box-shadow: 0 4px 0 #1fa4b3;
-   118	    }
-   119	
-   120	    .tabs {
-   121	      display: flex;
-   122	      gap: 22px;
-   123	      padding: 10px 16px 0;
-   124	      background: #242433;
-   125	    }
-   126	
-   127	    .tab {
-   128	      padding: 12px 2px 16px;
-   129	      font-size: 18px;
-   130	      color: var(--text-dim);
-   131	      position: relative;
-   132	      font-weight: 600;
-   133	    }
-   134	
-   135	    .tab.active {
-   136	      color: var(--accent);
-   137	    }
-   138	
-   139	    .tab.active::after {
-   140	      content: "";
-   141	      position: absolute;
-   142	      left: 0;
-   143	      right: 0;
-   144	      bottom: 0;
-   145	      height: 4px;
-   146	      border-radius: 4px;
-   147	      background: var(--accent-bright);
-   148	    }
-   149	
-   150	    .pair-zone {
-   151	      padding: 16px 16px 18px;
-   152	      background: #2f2f48;
-   153	      border-top: 1px solid #35354c;
-   154	    }
-   155	
-   156	    .pair-row {
-   157	      display: flex;
-   158	      align-items: center;
-   159	      gap: 12px;
-   160	    }
-   161	
-   162	    .pair-pill {
-   163	      flex: 1;
-   164	      display: flex;
-   165	      align-items: center;
-   166	      gap: 10px;
-   167	      background: #2d2d45;
-   168	      border-radius: 30px;
-   169	      padding: 8px;
-   170	      border: 1px solid #3a3a55;
-   171	    }
-   172	
-   173	    .pair-main {
-   174	      background: #111117;
-   175	      border-radius: 24px;
-   176	      padding: 10px 16px 10px 8px;
-   177	      display: flex;
-   178	      align-items: center;
-   179	      gap: 10px;
-   180	      border: 2px solid #6c5ed5;
-   181	      box-shadow: inset 0 0 0 2px #2b2b3f;
-   182	      flex: 1;
-   183	    }
-   184	
-   185	    .pair-main .price {
-   186	      font-size: 22px;
-   187	      font-weight: 700;
-   188	      color: #c8b6ff;
-   189	    }
-   190	
-   191	    .pair-main .ticker {
-   192	      font-size: 14px;
-   193	      color: var(--text-muted);
-   194	      font-weight: 600;
-   195	      margin-top: 2px;
-   196	    }
-   197	
-   198	    .pair-small {
-   199	      width: 44px;
-   200	      height: 44px;
-   201	      border-radius: 50%;
-   202	      background: #2f2f46;
-   203	      display: grid;
-   204	      place-items: center;
-   205	      border: 1px solid #3d3d5a;
-   206	      cursor: pointer;
-   207	    }
-   208	
-   209	    .pair-small svg {
-   210	      width: 26px;
-   211	      height: 26px;
-   212	    }
-   213	
-   214	    .timer-row {
-   215	      margin-top: 16px;
-   216	      display: flex;
-   217	      align-items: center;
-   218	      justify-content: space-between;
-   219	      gap: 14px;
-   220	    }
-   221	
-   222	    .timer-pill {
-   223	      display: flex;
-   224	      align-items: center;
-   225	      gap: 10px;
-   226	      background: #232233;
-   227	      color: #c2b7ff;
-   228	      padding: 8px 12px;
-   229	      border-radius: 18px;
-   230	      font-weight: 700;
-   231	      position: relative;
-   232	      min-width: 120px;
-   233	    }
-   234	
-   235	    .timer-pill small {
-   236	      display: block;
-   237	      color: #fff;
-   238	      font-weight: 500;
-   239	      font-size: 12px;
-   240	      margin-top: 2px;
-   241	    }
-   242	
-   243	    .timer-icons {
-   244	      display: flex;
-   245	      align-items: center;
-   246	      gap: 4px;
-   247	    }
-   248	
-   249	    .mini-icon {
-   250	      width: 22px;
-   251	      height: 22px;
-   252	    }
-   253	
-   254	    .timer-decor {
-   255	      width: 48px;
-   256	      height: 48px;
-   257	      border-radius: 50%;
-   258	      background: #f8c85c;
-   259	      display: grid;
-   260	      place-items: center;
-   261	      position: relative;
-   262	    }
-   263	
-   264	    .timer-decor::after {
-   265	      content: "";
-   266	      position: absolute;
-   267	      width: 16px;
-   268	      height: 16px;
-   269	      background: #fff;
-   270	      border-radius: 50%;
-   271	      right: -4px;
-   272	      top: -4px;
-   273	    }
-   274	
-   275	    .timer-decor svg {
-   276	      width: 26px;
-   277	      height: 26px;
-   278	    }
-   279	
-   280	    .help-row {
-   281	      display: flex;
-   282	      gap: 12px;
-   283	    }
-   284	
-   285	    .square-btn {
-   286	      width: 52px;
-   287	      height: 52px;
-   288	      border-radius: 16px;
-   289	      background: #b4afd0;
-   290	      display: grid;
-   291	      place-items: center;
-   292	      border: 2px solid #c8c4e4;
-   293	      color: #fff;
-   294	      font-size: 20px;
-   295	      cursor: pointer;
-   296	    }
-   297	
-   298	    .square-btn svg {
-   299	      width: 28px;
-   300	      height: 28px;
-   301	      fill: #fff;
-   302	    }
-   303	
-   304	    .cards-wrap {
-   305	      padding: 18px 0 30px;
-   306	    }
-   307	
-   308	    .cards-scroll {
-   309	      display: flex;
-   310	      gap: 16px;
-   311	      overflow-x: auto;
-   312	      padding: 0 16px 10px;
-   313	      scroll-snap-type: x mandatory;
-   314	    }
-   315	
-   316	    .cards-scroll::-webkit-scrollbar {
-   317	      display: none;
-   318	    }
-   319	
-   320	    .card {
-   321	      min-width: 280px;
-   322	      background: #2d2c3f;
-   323	      border-radius: 24px;
-   324	      padding: 0 0 16px;
-   325	      border: 2px solid #57557d;
-   326	      box-shadow: var(--shadow);
-   327	      scroll-snap-align: center;
-   328	      position: relative;
-   329	      overflow: hidden;
-   330	    }
-   331	
-   332	    .card-header {
-   333	      background: #2c2b3e;
-   334	      padding: 12px 16px;
-   335	      display: flex;
-   336	      align-items: center;
-   337	      justify-content: space-between;
-   338	      font-weight: 700;
-   339	      color: #c0b2ff;
-   340	      border-bottom: 1px solid #3a3952;
-   341	    }
-   342	
-   343	    .card-header.active {
-   344	      color: #b28dff;
-   345	    }
-   346	
-   347	    .card-header.next {
-   348	      background: #9e7dff;
-   349	      color: #fff;
-   350	    }
-   351	
-   352	    .card-content {
-   353	      padding: 18px 16px 8px;
-   354	      position: relative;
-   355	      text-align: center;
-   356	    }
-   357	
-   358	    .card-pill {
-   359	      background: #303044;
-   360	      border-radius: 18px;
-   361	      padding: 14px;
-   362	      border: 2px solid #3e3d57;
-   363	      text-align: left;
-   364	      color: var(--text-muted);
-   365	      margin: 0 auto;
-   366	    }
-   367	
-   368	    .card-pill.highlight {
-   369	      border-color: #38d7a5;
-   370	    }
-   371	
-   372	    .card-pill.pink {
-   373	      border-color: #f04da4;
-   374	    }
-   375	
-   376	    .price-row {
-   377	      display: flex;
-   378	      align-items: center;
-   379	      justify-content: space-between;
-   380	      margin-top: 10px;
-   381	    }
-   382	
-   383	    .price-row .price {
-   384	      font-size: 28px;
-   385	      font-weight: 800;
-   386	      color: #44d7a5;
-   387	    }
-   388	
-   389	    .delta {
-   390	      background: #3bd4a3;
-   391	      color: #0f2420;
-   392	      font-weight: 700;
-   393	      padding: 6px 10px;
-   394	      border-radius: 10px;
-   395	    }
-   396	
-   397	    .prize-row {
-   398	      margin-top: 10px;
-   399	      display: flex;
-   400	      justify-content: space-between;
-   401	      font-size: 14px;
-   402	      color: #c8c3e4;
-   403	      font-weight: 600;
-   404	    }
-   405	
-   406	    .footer-pill {
-   407	      margin-top: 12px;
-   408	      background: #c04d99;
-   409	      color: #fff;
-   410	      border-radius: 16px;
-   411	      padding: 8px 12px;
-   412	      font-weight: 700;
-   413	      text-align: center;
-   414	      box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2);
-   415	    }
-   416	
-   417	    .footer-pill.green {
-   418	      background: #37d2a3;
-   419	      color: #0a201c;
-   420	    }
-   421	
-   422	    .next-actions {
-   423	      display: flex;
-   424	      flex-direction: column;
-   425	      gap: 10px;
-   426	      margin-top: 10px;
-   427	    }
-   428	
-   429	    .next-actions button {
-   430	      padding: 12px;
-   431	      font-size: 16px;
-   432	      border: none;
-   433	      border-radius: 14px;
-   434	      font-weight: 700;
-   435	      cursor: pointer;
-   436	    }
-   437	
-   438	    .btn-up {
-   439	      background: #37d2a3;
-   440	      color: #0f2a23;
-   441	      box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2);
-   442	    }
-   443	
-   444	    .btn-down {
-   445	      background: #f04da4;
-   446	      color: #fff;
-   447	      box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2);
-   448	    }
-   449	
-   450	    .center-plate {
-   451	      background: #272739;
-   452	      border-radius: 18px;
-   453	      padding: 16px;
-   454	      border: 2px solid #36364a;
-   455	      font-size: 16px;
-   456	      font-weight: 600;
-   457	    }
-   458	
-   459	    .badge {
-   460	      position: fixed;
-   461	      bottom: 92px;
-   462	      right: 16px;
-   463	      background: #1f1f2c;
-   464	      padding: 8px 12px;
-   465	      border-radius: 14px;
-   466	      color: #d7d5ef;
-   467	      font-size: 12px;
-   468	      box-shadow: var(--shadow);
-   469	      display: flex;
-   470	      align-items: center;
-   471	      gap: 6px;
-   472	      z-index: 40;
-   473	    }
-   474	
-   475	    .bottom-nav {
-   476	      position: fixed;
-   477	      bottom: 0;
-   478	      left: 0;
-   479	      right: 0;
-   480	      background: #2a2a3c;
-   481	      border-top: 1px solid #3c3c55;
-   482	      display: flex;
-   483	      justify-content: space-around;
-   484	      padding: 10px 0 16px;
-   485	      z-index: 30;
-   486	    }
-   487	
-   488	    .nav-item {
-   489	      display: flex;
-   490	      flex-direction: column;
-   491	      align-items: center;
-   492	      gap: 6px;
-   493	      font-size: 11px;
-   494	      color: #b0aacd;
-   495	    }
-   496	
-   497	    .nav-item.active {
-   498	      color: #c0a7ff;
-   499	      font-weight: 700;
-   500	    }
-   501	
-   502	    .nav-item svg {
-   503	      width: 22px;
-   504	      height: 22px;
-   505	      fill: currentColor;
-   506	    }
-   507	
-   508	    .modal-backdrop {
-   509	      position: fixed;
-   510	      inset: 0;
-   511	      background: rgba(10, 10, 18, 0.6);
-   512	      display: none;
-   513	      align-items: center;
-   514	      justify-content: center;
-   515	      z-index: 60;
-   516	    }
-   517	
-   518	    .modal-backdrop.active {
-   519	      display: flex;
-   520	    }
-   521	
-   522	    .modal {
-   523	      background: #2e2e44;
-   524	      padding: 24px;
-   525	      border-radius: 18px;
-   526	      border: 1px solid #4a4966;
-   527	      width: min(320px, 90vw);
-   528	      text-align: center;
-   529	      box-shadow: var(--shadow);
-   530	    }
-   531	
-   532	    .modal button {
-   533	      margin-top: 14px;
-   534	      padding: 8px 16px;
-   535	      border-radius: 12px;
-   536	      border: none;
-   537	      background: #48d3e2;
-   538	      color: #0f1f22;
-   539	      font-weight: 700;
-   540	      cursor: pointer;
-   541	    }
-   542	
-   543	    .overlay-panel {
-   544	      position: fixed;
-   545	      top: 20px;
-   546	      right: 20px;
-   547	      background: rgba(20, 20, 30, 0.9);
-   548	      padding: 12px;
-   549	      border-radius: 12px;
-   550	      color: #fff;
-   551	      z-index: 100;
-   552	      display: none;
-   553	      width: 220px;
-   554	      font-size: 12px;
-   555	    }
-   556	
-   557	    .overlay-panel.active {
-   558	      display: block;
-   559	    }
-   560	
-   561	    .overlay-panel input[type="file"] {
-   562	      width: 100%;
-   563	      margin-bottom: 8px;
-   564	    }
-   565	
-   566	    .overlay-panel .list {
-   567	      display: grid;
-   568	      gap: 6px;
-   569	    }
-   570	
-   571	    .overlay-panel .list span {
-   572	      padding: 4px 6px;
-   573	      background: #2c2c3f;
-   574	      border-radius: 6px;
-   575	    }
-   576	
-   577	    .overlay-image {
-   578	      position: fixed;
-   579	      top: 0;
-   580	      left: 0;
-   581	      opacity: 0.6;
-   582	      pointer-events: none;
-   583	      z-index: 90;
-   584	    }
-   585	  </style>
-   586	</head>
-   587	<body>
-   588	  <div class="app">
-   589	    <div class="sticky-zone">
-   590	      <div class="top-bar">
-   591	        <div class="logo">
-   592	          <svg viewBox="0 0 64 64" aria-hidden="true">
-   593	            <circle cx="32" cy="32" r="30" fill="#f4a94a" />
-   594	            <circle cx="32" cy="32" r="20" fill="#c47a2a" />
-   595	            <rect x="20" y="18" width="24" height="28" rx="10" fill="#f8d39a" />
-   596	            <circle cx="26" cy="32" r="4" fill="#5c3b1e" />
-   597	            <circle cx="38" cy="32" r="4" fill="#5c3b1e" />
-   598	          </svg>
-   599	        </div>
-   600	        <div class="top-actions">
-   601	          <button class="icon-btn js-modal" data-modal="settings" aria-label="Settings">
-   602	            <svg viewBox="0 0 24 24" width="18" height="18" fill="#c6c1e5">
-   603	              <path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm8.7 3.1-.9-.6.2-1.1-1.8-3.1-1 .3-.9-.6-1.2-1.1-3.4.3-.2 1-.9.5-1.1-.6-3.2 1.8.2 1.2-.7.8-.9.7 1.8 3.2 1.1-.2.9.5 1.1 1.1 3.4-.3.2-1 .9-.5 1.1.6 3.2-1.8-.2-1.2.7-.8.9-.7-1.8-3.2Z" />
-   604	            </svg>
-   605	          </button>
-   606	          <div class="chain-pill js-modal" data-modal="chain">
-   607	            <svg viewBox="0 0 24 24" width="20" height="20">
-   608	              <circle cx="12" cy="12" r="10" fill="#f5c84b" />
-   609	              <path d="M8 9h8v6H8z" fill="#2d2d2d" />
-   610	              <path d="M12 7l4 2-4 2-4-2 4-2Z" fill="#2d2d2d" />
-   611	            </svg>
-   612	            <span>BNB</span>
-   613	            <svg viewBox="0 0 24 24" width="12" height="12" fill="#c6c1e5">
-   614	              <path d="M6 9l6 6 6-6" />
-   615	            </svg>
-   616	          </div>
-   617	          <button class="connect-btn js-modal" data-modal="connect">Подключиться</button>
-   618	        </div>
-   619	      </div>
-   620	      <div class="tabs">
-   621	        <div class="tab active">Прогноз</div>
-   622	        <div class="tab">Лотерея</div>
-   623	      </div>
-   624	      <div class="pair-zone">
-   625	        <div class="pair-row">
-   626	          <div class="pair-pill">
-   627	            <div class="pair-main">
-   628	              <svg viewBox="0 0 32 32" width="40" height="40">
-   629	                <circle cx="16" cy="16" r="16" fill="#f59f1c" />
-   630	                <path d="M14 7h4v3h3v3h-3v6h3v3h-3v3h-4v-3h-3v-3h3v-6h-3V10h3V7Z" fill="#fff" />
-   631	              </svg>
-   632	              <div>
-   633	                <div class="price" id="priceDisplay">$89,845.57</div>
-   634	                <div class="ticker">BTCUSD</div>
-   635	              </div>
-   636	            </div>
-   637	            <button class="pair-small js-modal" data-modal="pair">
-   638	              <svg viewBox="0 0 32 32">
-   639	                <circle cx="16" cy="16" r="16" fill="#f0c948" />
-   640	                <path d="M10 12l6-4 6 4-6 4-6-4Zm0 8l6-4 6 4-6 4-6-4Z" fill="#fff" />
-   641	              </svg>
-   642	            </button>
-   643	            <button class="pair-small js-modal" data-modal="pair">
-   644	              <svg viewBox="0 0 32 32">
-   645	                <circle cx="16" cy="16" r="16" fill="#f1f1f5" />
-   646	                <polygon points="16,6 24,16 16,26 8,16" fill="#6c6c75" />
-   647	              </svg>
-   648	            </button>
-   649	          </div>
-   650	        </div>
-   651	        <div class="timer-row">
-   652	          <div class="timer-pill">
-   653	            <div>
-   654	              <div id="timerDisplay">01:23</div>
-   655	              <small>5мин</small>
-   656	            </div>
-   657	            <div class="timer-icons">
-   658	              <svg class="mini-icon" viewBox="0 0 24 24">
-   659	                <path d="M4 12l8-8 8 8-8 8-8-8Z" fill="#f7c84c" />
-   660	              </svg>
-   661	              <svg class="mini-icon" viewBox="0 0 24 24">
-   662	                <path d="M12 3l7 5v8l-7 5-7-5V8l7-5Z" fill="#ffcc66" />
-   663	              </svg>
-   664	            </div>
-   665	            <div class="timer-decor">
-   666	              <svg viewBox="0 0 24 24">
-   667	                <circle cx="12" cy="12" r="8" fill="#fff" />
-   668	                <path d="M12 7v5l3 2" stroke="#6c4bc3" stroke-width="2" fill="none" stroke-linecap="round" />
-   669	              </svg>
-   670	            </div>
-   671	          </div>
-   672	          <div class="help-row">
-   673	            <button class="square-btn js-modal" data-modal="help">?</button>
-   674	            <button class="square-btn js-modal" data-modal="trophy">
-   675	              <svg viewBox="0 0 24 24">
-   676	                <path d="M5 4h14v3h3v2c0 3-2 5-5 5-1.4 0-2.6-.4-3.5-1.1V16h3v3H8v-3h3v-3.1c-.9.7-2.1 1.1-3.5 1.1-3 0-5-2-5-5V7h3V4Zm3 4H5v1c0 1.7 1.3 3 3 3 1.5 0 2.8-.9 3-2.3V8Zm11 0h-3v1c.2 1.4 1.5 2.3 3 2.3 1.7 0 3-1.3 3-3V8Z" fill="#fff" />
-   677	              </svg>
-   678	            </button>
-   679	          </div>
-   680	        </div>
-   681	      </div>
-   682	    </div>
-   683	
-   684	    <div class="cards-wrap">
-   685	      <div class="cards-scroll">
-   686	        <div class="card">
-   687	          <div class="card-header active">
-   688	            <span>АКТИВНО</span>
-   689	            <span>#38274</span>
-   690	          </div>
-   691	          <div class="card-content">
-   692	            <div class="card-pill highlight">
-   693	              <div style="font-size:14px; font-weight:700; color:#7fe3c2;">ПОСЛЕДНЯЯ ЦЕНА</div>
-   694	              <div class="price-row">
-   695	                <div class="price" id="priceCard">$89,845.57</div>
-   696	                <div class="delta" id="deltaCard">↑ $134.53</div>
-   697	              </div>
-   698	              <div class="prize-row">
-   699	                <span>Зафиксированная цена:</span>
-   700	                <span id="fixedPrice">$89,711.03</span>
-   701	              </div>
-   702	              <div class="prize-row">
-   703	                <span>Призовой пул:</span>
-   704	                <span>0.0055 BNB</span>
-   705	              </div>
-   706	            </div>
-   707	            <div class="footer-pill">2.75x Выплата ВНИЗ</div>
-   708	          </div>
-   709	        </div>
-   710	
-   711	        <div class="card">
-   712	          <div class="card-header next">
-   713	            <span>Следующий</span>
-   714	            <span>#38275</span>
-   715	          </div>
-   716	          <div class="card-content">
-   717	            <div class="card-pill">
-   718	              <div style="font-weight:700; color:#f4f4ff;">Призовой пул:</div>
-   719	              <div style="font-size:16px; font-weight:700; margin-top:4px;">&lt;0.0001 BNB</div>
-   720	              <div class="next-actions">
-   721	                <button class="btn-up js-modal" data-modal="up">Занять ВЕРХ</button>
-   722	                <button class="btn-down js-modal" data-modal="down">Занять НИЗ</button>
-   723	              </div>
-   724	            </div>
-   725	          </div>
-   726	        </div>
-   727	
-   728	        <div class="card">
-   729	          <div class="card-header">
-   730	            <span>Позже</span>
-   731	            <span>#38276</span>
-   732	          </div>
-   733	          <div class="card-content">
-   734	            <div class="center-plate">Начало входа <strong>~01:12</strong></div>
-   735	          </div>
-   736	        </div>
-   737	
-   738	        <div class="card">
-   739	          <div class="card-header">
-   740	            <span>Срок истек</span>
-   741	            <span>#38273</span>
-   742	          </div>
-   743	          <div class="card-content">
-   744	            <div class="card-pill pink">
-   745	              <div style="font-weight:700; color:#f5a0d2;">ЦЕНА ЗАКРЫТИЯ</div>
-   746	              <div class="price-row">
-   747	                <div class="price" style="color:#f05aa9;">$89,711.03</div>
-   748	                <div class="delta" style="background:#c84b9a; color:#fff;">↓ $-163.39</div>
-   749	              </div>
-   750	              <div class="prize-row">
-   751	                <span>Зафиксированная цена:</span>
-   752	                <span>$89,874.42</span>
-   753	              </div>
-   754	              <div class="prize-row">
-   755	                <span>Призовой пул:</span>
-   756	                <span>0.0097 BNB</span>
-   757	              </div>
-   758	            </div>
-   759	            <div class="footer-pill green">1.81x Выплата ВВЕРХ</div>
-   760	          </div>
-   761	        </div>
-   762	      </div>
-   763	    </div>
-   764	  </div>
-   765	
-   766	  <div class="badge">
-   767	    <svg viewBox="0 0 24 24" width="16" height="16">
-   768	      <path d="M12 2l9 5v10l-9 5-9-5V7l9-5Z" fill="#f5c84b" />
-   769	      <path d="M8 9h8v6H8z" fill="#2d2d2d" />
-   770	    </svg>
-   771	    Market Data / secured with Chainlink
-   772	  </div>
-   773	
-   774	  <nav class="bottom-nav">
-   775	    <div class="nav-item">
-   776	      <svg viewBox="0 0 24 24"><path d="M4 14h4l2-6h4l2 6h4" /></svg>
-   777	      Сделки
-   778	    </div>
-   779	    <div class="nav-item">
-   780	      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" /></svg>
-   781	      Бессрочные
-   782	    </div>
-   783	    <div class="nav-item">
-   784	      <svg viewBox="0 0 24 24"><path d="M6 12h12M6 16h12" /></svg>
-   785	      Заработать
-   786	    </div>
-   787	    <div class="nav-item">
-   788	      <svg viewBox="0 0 24 24"><path d="M12 2l8 8-8 8-8-8 8-8Z" /></svg>
-   789	      Прогноз
-   790	    </div>
-   791	    <div class="nav-item active">
-   792	      <svg viewBox="0 0 24 24"><path d="M12 4l7 5v6l-7 5-7-5V9l7-5Z" /></svg>
-   793	      Играть
-   794	    </div>
-   795	  </nav>
-   796	
-   797	  <div class="modal-backdrop" id="modalBackdrop">
-   798	    <div class="modal" id="modalContent">
-   799	      <h3 id="modalTitle">Модалка</h3>
-   800	      <p id="modalBody" style="margin-top:8px; color:var(--text-muted);">Заглушка.</p>
-   801	      <button id="modalClose">Закрыть</button>
-   802	    </div>
-   803	  </div>
-   804	
-   805	  <div class="overlay-panel" id="overlayPanel">
-   806	    <strong>Overlay Mode</strong>
-   807	    <p style="margin:6px 0; color:#bdb7d9;">O — выключить. 1-4 переключить. +/- прозрачность. Стрелки — сдвиг.</p>
-   808	    <input type="file" id="overlayInput" accept="image/png" multiple />
-   809	    <div class="list" id="overlayList"></div>
-   810	    <div style="margin-top:6px;">Opacity: <span id="overlayOpacity">0.6</span></div>
-   811	    <div>Position: <span id="overlayPos">0,0</span></div>
-   812	  </div>
-   813	  <img id="overlayImage" class="overlay-image" alt="overlay" />
-   814	
-   815	  <script>
-   816	    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-   817	    if (tg) {
-   818	      tg.ready();
-   819	      tg.expand();
-   820	    }
-   821	
-   822	    const priceDisplay = document.getElementById("priceDisplay");
-   823	    const priceCard = document.getElementById("priceCard");
-   824	    const fixedPrice = document.getElementById("fixedPrice");
-   825	    const deltaCard = document.getElementById("deltaCard");
-   826	    const timerDisplay = document.getElementById("timerDisplay");
-   827	
-   828	    let basePrice = 89845.57;
-   829	    let lastPrice = basePrice;
-   830	    let fixedBase = 89711.03;
-   831	    let timeLeft = 83;
-   832	
-   833	    const formatPrice = (value) => {
-   834	      return "$" + value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-   835	    };
-   836	
-   837	    const updatePrice = () => {
-   838	      const change = (Math.random() - 0.5) * 10;
-   839	      lastPrice = Math.max(89000, lastPrice + change);
-   840	      const delta = lastPrice - fixedBase;
-   841	      priceDisplay.textContent = formatPrice(lastPrice);
-   842	      priceCard.textContent = formatPrice(lastPrice);
-   843	      fixedPrice.textContent = formatPrice(fixedBase);
-   844	      deltaCard.textContent = `${delta >= 0 ? "↑" : "↓"} $${Math.abs(delta).toFixed(2)}`;
-   845	      deltaCard.style.background = delta >= 0 ? "#3bd4a3" : "#c84b9a";
-   846	      deltaCard.style.color = delta >= 0 ? "#0f2420" : "#fff";
-   847	    };
-   848	
-   849	    const updateTimer = () => {
-   850	      timeLeft = (timeLeft - 1 + 300) % 300;
-   851	      const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
-   852	      const seconds = String(timeLeft % 60).padStart(2, "0");
-   853	      timerDisplay.textContent = `${minutes}:${seconds}`;
-   854	    };
-   855	
-   856	    setInterval(updatePrice, 1000);
-   857	    setInterval(updateTimer, 1000);
-   858	
-   859	    const modalBackdrop = document.getElementById("modalBackdrop");
-   860	    const modalTitle = document.getElementById("modalTitle");
-   861	    const modalBody = document.getElementById("modalBody");
-   862	    const modalClose = document.getElementById("modalClose");
-   863	
-   864	    document.querySelectorAll(".js-modal").forEach((btn) => {
-   865	      btn.addEventListener("click", () => {
-   866	        const type = btn.dataset.modal || "info";
-   867	        modalTitle.textContent = "Действие";
-   868	        modalBody.textContent = `Открыта заглушка: ${type}.`;
-   869	        modalBackdrop.classList.add("active");
-   870	      });
-   871	    });
-   872	
-   873	    modalClose.addEventListener("click", () => {
-   874	      modalBackdrop.classList.remove("active");
-   875	    });
-   876	
-   877	    modalBackdrop.addEventListener("click", (event) => {
-   878	      if (event.target === modalBackdrop) {
-   879	        modalBackdrop.classList.remove("active");
-   880	      }
-   881	    });
-   882	
-   883	    const overlayPanel = document.getElementById("overlayPanel");
-   884	    const overlayInput = document.getElementById("overlayInput");
-   885	    const overlayImage = document.getElementById("overlayImage");
-   886	    const overlayList = document.getElementById("overlayList");
-   887	    const overlayOpacity = document.getElementById("overlayOpacity");
-   888	    const overlayPos = document.getElementById("overlayPos");
-   889	
-   890	    let overlayImages = [];
-   891	    let overlayIndex = 0;
-   892	    let overlayEnabled = false;
-   893	    let overlayAlpha = 0.6;
-   894	    let overlayX = 0;
-   895	    let overlayY = 0;
-   896	
-   897	    const renderOverlayList = () => {
-   898	      overlayList.innerHTML = "";
-   899	      overlayImages.forEach((img, index) => {
-   900	        const item = document.createElement("span");
-   901	        item.textContent = `${index + 1}: ${img.name || "image"}`;
-   902	        if (index === overlayIndex) {
-   903	          item.style.background = "#4f4f73";
-   904	        }
-   905	        overlayList.appendChild(item);
-   906	      });
-   907	    };
-   908	
-   909	    const updateOverlay = () => {
-   910	      if (!overlayImages.length) {
-   911	        overlayImage.removeAttribute("src");
-   912	        return;
-   913	      }
-   914	      overlayImage.src = overlayImages[overlayIndex].src;
-   915	      overlayImage.style.opacity = overlayAlpha;
-   916	      overlayImage.style.transform = `translate(${overlayX}px, ${overlayY}px)`;
-   917	      overlayOpacity.textContent = overlayAlpha.toFixed(2);
-   918	      overlayPos.textContent = `${overlayX},${overlayY}`;
-   919	      renderOverlayList();
-   920	    };
-   921	
-   922	    overlayInput.addEventListener("change", (event) => {
-   923	      const files = Array.from(event.target.files || []).slice(0, 4);
-   924	      overlayImages = [];
-   925	      let loaded = 0;
-   926	      files.forEach((file, index) => {
-   927	        const reader = new FileReader();
-   928	        reader.onload = (e) => {
-   929	          overlayImages[index] = { src: e.target.result, name: file.name };
-   930	          loaded += 1;
-   931	          if (loaded === files.length) {
-   932	            overlayIndex = 0;
-   933	            updateOverlay();
-   934	          }
-   935	        };
-   936	        reader.readAsDataURL(file);
-   937	      });
-   938	    });
-   939	
-   940	    const toggleOverlay = () => {
-   941	      overlayEnabled = !overlayEnabled;
-   942	      overlayPanel.classList.toggle("active", overlayEnabled);
-   943	      overlayImage.style.display = overlayEnabled ? "block" : "none";
-   944	    };
-   945	
-   946	    document.addEventListener("keydown", (event) => {
-   947	      if (event.key.toLowerCase() === "o") {
-   948	        toggleOverlay();
-   949	      }
-   950	
-   951	      if (!overlayEnabled) return;
-   952	
-   953	      if (["1", "2", "3", "4"].includes(event.key)) {
-   954	        const idx = Number(event.key) - 1;
-   955	        if (overlayImages[idx]) {
-   956	          overlayIndex = idx;
-   957	          updateOverlay();
-   958	        }
-   959	      }
-   960	
-   961	      if (event.key === "+" || event.key === "=") {
-   962	        overlayAlpha = Math.min(1, overlayAlpha + 0.05);
-   963	        updateOverlay();
-   964	      }
-   965	
-   966	      if (event.key === "-") {
-   967	        overlayAlpha = Math.max(0, overlayAlpha - 0.05);
-   968	        updateOverlay();
-   969	      }
-   970	
-   971	      if (event.key === "ArrowUp") {
-   972	        overlayY -= 1;
-   973	        updateOverlay();
-   974	      }
-   975	
-   976	      if (event.key === "ArrowDown") {
-   977	        overlayY += 1;
-   978	        updateOverlay();
-   979	      }
-   980	
-   981	      if (event.key === "ArrowLeft") {
-   982	        overlayX -= 1;
-   983	        updateOverlay();
-   984	      }
-   985	
-   986	      if (event.key === "ArrowRight") {
-   987	        overlayX += 1;
-   988	        updateOverlay();
-   989	      }
-   990	    });
-   991	
-   992	    updatePrice();
-   993	    updateTimer();
-   994	    overlayImage.style.display = "none";
-   995	  </script>
-   996	</body>
-   997	</html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Прогноз - Telegram Mini App</title>
+  <style>
+    :root {
+      --bg: #4a4a78;
+      --bg-dark: #1f1f29;
+      --bg-darker: #14141b;
+      --card: #2b2b3a;
+      --card-soft: #34344a;
+      --card-border: #5e5e86;
+      --accent: #a78bfa;
+      --accent-bright: #36d6e2;
+      --accent-green: #38d7a5;
+      --accent-pink: #f04da4;
+      --accent-yellow: #f7c64b;
+      --text: #f2f2f7;
+      --text-muted: #b9b7d6;
+      --text-dim: #8e8bb0;
+      --pill-dark: #2b2a3c;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      --radius: 20px;
+      --radius-lg: 28px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Inter", "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: linear-gradient(180deg, #4b4a7d 0%, #464671 50%, #3f3f63 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 120px;
+    }
+
+    .app {
+      max-width: 420px;
+      margin: 0 auto;
+      position: relative;
+      padding-bottom: 120px;
+    }
+
+    .sticky-zone {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: linear-gradient(180deg, #1f1f2b 0%, #2a2a3d 100%);
+      box-shadow: 0 6px 20px rgba(12, 12, 20, 0.4);
+    }
+
+    .top-bar {
+      background: var(--bg-dark);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid #2d2d3f;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo svg {
+      width: 34px;
+      height: 34px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: #2a2a3a;
+      border: 1px solid #3c3c54;
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .chain-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #2d2d3d;
+      border-radius: 18px;
+      padding: 6px 10px;
+      border: 1px solid #3f3f57;
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    .connect-btn {
+      background: var(--accent-bright);
+      color: #0b1c1c;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 18px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #1fa4b3;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 22px;
+      padding: 10px 16px 0;
+      background: #242433;
+    }
+
+    .tab {
+      padding: 12px 2px 16px;
+      font-size: 18px;
+      color: var(--text-dim);
+      position: relative;
+      font-weight: 600;
+    }
+
+    .tab.active {
+      color: var(--accent);
+    }
+
+    .tab.active::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 4px;
+      border-radius: 4px;
+      background: var(--accent-bright);
+    }
+
+    .pair-zone {
+      padding: 16px 16px 18px;
+      background: #2f2f48;
+      border-top: 1px solid #35354c;
+    }
+
+    .pair-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pair-pill {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #2d2d45;
+      border-radius: 30px;
+      padding: 8px;
+      border: 1px solid #3a3a55;
+    }
+
+    .pair-main {
+      background: #111117;
+      border-radius: 24px;
+      padding: 10px 16px 10px 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 2px solid #6c5ed5;
+      box-shadow: inset 0 0 0 2px #2b2b3f;
+      flex: 1;
+    }
+
+    .pair-main .price {
+      font-size: 22px;
+      font-weight: 700;
+      color: #c8b6ff;
+    }
+
+    .pair-main .ticker {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .pair-small {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #2f2f46;
+      display: grid;
+      place-items: center;
+      border: 1px solid #3d3d5a;
+      cursor: pointer;
+    }
+
+    .pair-small svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    .timer-row {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .timer-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #232233;
+      color: #c2b7ff;
+      padding: 8px 12px;
+      border-radius: 18px;
+      font-weight: 700;
+      position: relative;
+      min-width: 120px;
+    }
+
+    .timer-pill small {
+      display: block;
+      color: #fff;
+      font-weight: 500;
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .timer-icons {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .mini-icon {
+      width: 22px;
+      height: 22px;
+    }
+
+    .timer-decor {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #f8c85c;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    .timer-decor::after {
+      content: "";
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      right: -4px;
+      top: -4px;
+    }
+
+    .timer-decor svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    .help-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .square-btn {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: #b4afd0;
+      display: grid;
+      place-items: center;
+      border: 2px solid #c8c4e4;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .square-btn svg {
+      width: 28px;
+      height: 28px;
+      fill: #fff;
+    }
+
+    .cards-wrap {
+      padding: 18px 0 30px;
+    }
+
+    .cards-scroll {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      padding: 0 16px 10px;
+      scroll-snap-type: x mandatory;
+    }
+
+    .cards-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .card {
+      min-width: 280px;
+      background: #2d2c3f;
+      border-radius: 24px;
+      padding: 0 0 16px;
+      border: 2px solid #57557d;
+      box-shadow: var(--shadow);
+      scroll-snap-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: #2c2b3e;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+      color: #c0b2ff;
+      border-bottom: 1px solid #3a3952;
+    }
+
+    .card-header.active {
+      color: #b28dff;
+    }
+
+    .card-header.next {
+      background: #9e7dff;
+      color: #fff;
+    }
+
+    .card-content {
+      padding: 18px 16px 8px;
+      position: relative;
+      text-align: center;
+    }
+
+    .card-pill {
+      background: #303044;
+      border-radius: 18px;
+      padding: 14px;
+      border: 2px solid #3e3d57;
+      text-align: left;
+      color: var(--text-muted);
+      margin: 0 auto;
+    }
+
+    .card-pill.highlight {
+      border-color: #38d7a5;
+    }
+
+    .card-pill.pink {
+      border-color: #f04da4;
+    }
+
+    .price-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .price-row .price {
+      font-size: 28px;
+      font-weight: 800;
+      color: #44d7a5;
+    }
+
+    .delta {
+      background: #3bd4a3;
+      color: #0f2420;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 10px;
+    }
+
+    .prize-row {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      color: #c8c3e4;
+      font-weight: 600;
+    }
+
+    .footer-pill {
+      margin-top: 12px;
+      background: #c04d99;
+      color: #fff;
+      border-radius: 16px;
+      padding: 8px 12px;
+      font-weight: 700;
+      text-align: center;
+      box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    .footer-pill.green {
+      background: #37d2a3;
+      color: #0a201c;
+    }
+
+    .next-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .next-actions button {
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-up {
+      background: #37d2a3;
+      color: #0f2a23;
+      box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-down {
+      background: #f04da4;
+      color: #fff;
+      box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    .center-plate {
+      background: #272739;
+      border-radius: 18px;
+      padding: 16px;
+      border: 2px solid #36364a;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .badge {
+      position: fixed;
+      bottom: 92px;
+      right: 16px;
+      background: #1f1f2c;
+      padding: 8px 12px;
+      border-radius: 14px;
+      color: #d7d5ef;
+      font-size: 12px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 40;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #2a2a3c;
+      border-top: 1px solid #3c3c55;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0 16px;
+      z-index: 30;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #b0aacd;
+    }
+
+    .nav-item.active {
+      color: #c0a7ff;
+      font-weight: 700;
+    }
+
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 18, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 60;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal {
+      background: #2e2e44;
+      padding: 24px;
+      border-radius: 18px;
+      border: 1px solid #4a4966;
+      width: min(320px, 90vw);
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .modal button {
+      margin-top: 14px;
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: none;
+      background: #48d3e2;
+      color: #0f1f22;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .overlay-panel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(20, 20, 30, 0.9);
+      padding: 12px;
+      border-radius: 12px;
+      color: #fff;
+      z-index: 100;
+      display: none;
+      width: 220px;
+      font-size: 12px;
+    }
+
+    .overlay-panel.active {
+      display: block;
+    }
+
+    .overlay-panel input[type="file"] {
+      width: 100%;
+      margin-bottom: 8px;
+    }
+
+    .overlay-panel .list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .overlay-panel .list span {
+      padding: 4px 6px;
+      background: #2c2c3f;
+      border-radius: 6px;
+    }
+
+    .overlay-image {
+      position: fixed;
+      top: 0;
+      left: 0;
+      opacity: 0.6;
+      pointer-events: none;
+      z-index: 90;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="sticky-zone">
+      <div class="top-bar">
+        <div class="logo">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <circle cx="32" cy="32" r="30" fill="#f4a94a" />
+            <circle cx="32" cy="32" r="20" fill="#c47a2a" />
+            <rect x="20" y="18" width="24" height="28" rx="10" fill="#f8d39a" />
+            <circle cx="26" cy="32" r="4" fill="#5c3b1e" />
+            <circle cx="38" cy="32" r="4" fill="#5c3b1e" />
+          </svg>
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn js-modal" data-modal="settings" aria-label="Settings">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="#c6c1e5">
+              <path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm8.7 3.1-.9-.6.2-1.1-1.8-3.1-1 .3-.9-.6-1.2-1.1-3.4.3-.2 1-.9.5-1.1-.6-3.2 1.8.2 1.2-.7.8-.9.7 1.8 3.2 1.1-.2.9.5 1.1 1.1 3.4-.3.2-1 .9-.5 1.1.6 3.2-1.8-.2-1.2.7-.8.9-.7-1.8-3.2Z" />
+            </svg>
+          </button>
+          <div class="chain-pill js-modal" data-modal="chain">
+            <svg viewBox="0 0 24 24" width="20" height="20">
+              <circle cx="12" cy="12" r="10" fill="#f5c84b" />
+              <path d="M8 9h8v6H8z" fill="#2d2d2d" />
+              <path d="M12 7l4 2-4 2-4-2 4-2Z" fill="#2d2d2d" />
+            </svg>
+            <span>BNB</span>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="#c6c1e5">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </div>
+          <button class="connect-btn js-modal" data-modal="connect">Подключиться</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab active">Прогноз</div>
+        <div class="tab">Лотерея</div>
+      </div>
+      <div class="pair-zone">
+        <div class="pair-row">
+          <div class="pair-pill">
+            <div class="pair-main">
+              <svg viewBox="0 0 32 32" width="40" height="40">
+                <circle cx="16" cy="16" r="16" fill="#f59f1c" />
+                <path d="M14 7h4v3h3v3h-3v6h3v3h-3v3h-4v-3h-3v-3h3v-6h-3V10h3V7Z" fill="#fff" />
+              </svg>
+              <div>
+                <div class="price" id="priceDisplay">$89,845.57</div>
+                <div class="ticker">BTCUSD</div>
+              </div>
+            </div>
+            <button class="pair-small js-modal" data-modal="pair">
+              <svg viewBox="0 0 32 32">
+                <circle cx="16" cy="16" r="16" fill="#f0c948" />
+                <path d="M10 12l6-4 6 4-6 4-6-4Zm0 8l6-4 6 4-6 4-6-4Z" fill="#fff" />
+              </svg>
+            </button>
+            <button class="pair-small js-modal" data-modal="pair">
+              <svg viewBox="0 0 32 32">
+                <circle cx="16" cy="16" r="16" fill="#f1f1f5" />
+                <polygon points="16,6 24,16 16,26 8,16" fill="#6c6c75" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="timer-row">
+          <div class="timer-pill">
+            <div>
+              <div id="timerDisplay">01:23</div>
+              <small>5мин</small>
+            </div>
+            <div class="timer-icons">
+              <svg class="mini-icon" viewBox="0 0 24 24">
+                <path d="M4 12l8-8 8 8-8 8-8-8Z" fill="#f7c84c" />
+              </svg>
+              <svg class="mini-icon" viewBox="0 0 24 24">
+                <path d="M12 3l7 5v8l-7 5-7-5V8l7-5Z" fill="#ffcc66" />
+              </svg>
+            </div>
+            <div class="timer-decor">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="8" fill="#fff" />
+                <path d="M12 7v5l3 2" stroke="#6c4bc3" stroke-width="2" fill="none" stroke-linecap="round" />
+              </svg>
+            </div>
+          </div>
+          <div class="help-row">
+            <button class="square-btn js-modal" data-modal="help">?</button>
+            <button class="square-btn js-modal" data-modal="trophy">
+              <svg viewBox="0 0 24 24">
+                <path d="M5 4h14v3h3v2c0 3-2 5-5 5-1.4 0-2.6-.4-3.5-1.1V16h3v3H8v-3h3v-3.1c-.9.7-2.1 1.1-3.5 1.1-3 0-5-2-5-5V7h3V4Zm3 4H5v1c0 1.7 1.3 3 3 3 1.5 0 2.8-.9 3-2.3V8Zm11 0h-3v1c.2 1.4 1.5 2.3 3 2.3 1.7 0 3-1.3 3-3V8Z" fill="#fff" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards-wrap">
+      <div class="cards-scroll">
+        <div class="card">
+          <div class="card-header active">
+            <span>АКТИВНО</span>
+            <span>#38274</span>
+          </div>
+          <div class="card-content">
+            <div class="card-pill highlight">
+              <div style="font-size:14px; font-weight:700; color:#7fe3c2;">ПОСЛЕДНЯЯ ЦЕНА</div>
+              <div class="price-row">
+                <div class="price" id="priceCard">$89,845.57</div>
+                <div class="delta" id="deltaCard">↑ $134.53</div>
+              </div>
+              <div class="prize-row">
+                <span>Зафиксированная цена:</span>
+                <span id="fixedPrice">$89,711.03</span>
+              </div>
+              <div class="prize-row">
+                <span>Призовой пул:</span>
+                <span>0.0055 BNB</span>
+              </div>
+            </div>
+            <div class="footer-pill">2.75x Выплата ВНИЗ</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header next">
+            <span>Следующий</span>
+            <span>#38275</span>
+          </div>
+          <div class="card-content">
+            <div class="card-pill">
+              <div style="font-weight:700; color:#f4f4ff;">Призовой пул:</div>
+              <div style="font-size:16px; font-weight:700; margin-top:4px;">&lt;0.0001 BNB</div>
+              <div class="next-actions">
+                <button class="btn-up js-modal" data-modal="up">Занять ВЕРХ</button>
+                <button class="btn-down js-modal" data-modal="down">Занять НИЗ</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span>Позже</span>
+            <span>#38276</span>
+          </div>
+          <div class="card-content">
+            <div class="center-plate">Начало входа <strong>~01:12</strong></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span>Срок истек</span>
+            <span>#38273</span>
+          </div>
+          <div class="card-content">
+            <div class="card-pill pink">
+              <div style="font-weight:700; color:#f5a0d2;">ЦЕНА ЗАКРЫТИЯ</div>
+              <div class="price-row">
+                <div class="price" style="color:#f05aa9;">$89,711.03</div>
+                <div class="delta" style="background:#c84b9a; color:#fff;">↓ $-163.39</div>
+              </div>
+              <div class="prize-row">
+                <span>Зафиксированная цена:</span>
+                <span>$89,874.42</span>
+              </div>
+              <div class="prize-row">
+                <span>Призовой пул:</span>
+                <span>0.0097 BNB</span>
+              </div>
+            </div>
+            <div class="footer-pill green">1.81x Выплата ВВЕРХ</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="badge">
+    <svg viewBox="0 0 24 24" width="16" height="16">
+      <path d="M12 2l9 5v10l-9 5-9-5V7l9-5Z" fill="#f5c84b" />
+      <path d="M8 9h8v6H8z" fill="#2d2d2d" />
+    </svg>
+    Market Data / secured with Chainlink
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24"><path d="M4 14h4l2-6h4l2 6h4" /></svg>
+      Сделки
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" /></svg>
+      Бессрочные
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24"><path d="M6 12h12M6 16h12" /></svg>
+      Заработать
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24"><path d="M12 2l8 8-8 8-8-8 8-8Z" /></svg>
+      Прогноз
+    </div>
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24"><path d="M12 4l7 5v6l-7 5-7-5V9l7-5Z" /></svg>
+      Играть
+    </div>
+  </nav>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" id="modalContent">
+      <h3 id="modalTitle">Модалка</h3>
+      <p id="modalBody" style="margin-top:8px; color:var(--text-muted);">Заглушка.</p>
+      <button id="modalClose">Закрыть</button>
+    </div>
+  </div>
+
+  <div class="overlay-panel" id="overlayPanel">
+    <strong>Overlay Mode</strong>
+    <p style="margin:6px 0; color:#bdb7d9;">O — выключить. 1-4 переключить. +/- прозрачность. Стрелки — сдвиг.</p>
+    <input type="file" id="overlayInput" accept="image/png" multiple />
+    <div class="list" id="overlayList"></div>
+    <div style="margin-top:6px;">Opacity: <span id="overlayOpacity">0.6</span></div>
+    <div>Position: <span id="overlayPos">0,0</span></div>
+  </div>
+  <img id="overlayImage" class="overlay-image" alt="overlay" />
+
+  <script>
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    const priceDisplay = document.getElementById("priceDisplay");
+    const priceCard = document.getElementById("priceCard");
+    const fixedPrice = document.getElementById("fixedPrice");
+    const deltaCard = document.getElementById("deltaCard");
+    const timerDisplay = document.getElementById("timerDisplay");
+
+    let basePrice = 89845.57;
+    let lastPrice = basePrice;
+    let fixedBase = 89711.03;
+    let timeLeft = 83;
+
+    const formatPrice = (value) => {
+      return "$" + value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    const updatePrice = () => {
+      const change = (Math.random() - 0.5) * 10;
+      lastPrice = Math.max(89000, lastPrice + change);
+      const delta = lastPrice - fixedBase;
+      priceDisplay.textContent = formatPrice(lastPrice);
+      priceCard.textContent = formatPrice(lastPrice);
+      fixedPrice.textContent = formatPrice(fixedBase);
+      deltaCard.textContent = `${delta >= 0 ? "↑" : "↓"} $${Math.abs(delta).toFixed(2)}`;
+      deltaCard.style.background = delta >= 0 ? "#3bd4a3" : "#c84b9a";
+      deltaCard.style.color = delta >= 0 ? "#0f2420" : "#fff";
+    };
+
+    const updateTimer = () => {
+      timeLeft = (timeLeft - 1 + 300) % 300;
+      const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+      const seconds = String(timeLeft % 60).padStart(2, "0");
+      timerDisplay.textContent = `${minutes}:${seconds}`;
+    };
+
+    setInterval(updatePrice, 1000);
+    setInterval(updateTimer, 1000);
+
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalBody = document.getElementById("modalBody");
+    const modalClose = document.getElementById("modalClose");
+
+    document.querySelectorAll(".js-modal").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const type = btn.dataset.modal || "info";
+        modalTitle.textContent = "Действие";
+        modalBody.textContent = `Открыта заглушка: ${type}.`;
+        modalBackdrop.classList.add("active");
+      });
+    });
+
+    modalClose.addEventListener("click", () => {
+      modalBackdrop.classList.remove("active");
+    });
+
+    modalBackdrop.addEventListener("click", (event) => {
+      if (event.target === modalBackdrop) {
+        modalBackdrop.classList.remove("active");
+      }
+    });
+
+    const overlayPanel = document.getElementById("overlayPanel");
+    const overlayInput = document.getElementById("overlayInput");
+    const overlayImage = document.getElementById("overlayImage");
+    const overlayList = document.getElementById("overlayList");
+    const overlayOpacity = document.getElementById("overlayOpacity");
+    const overlayPos = document.getElementById("overlayPos");
+
+    let overlayImages = [];
+    let overlayIndex = 0;
+    let overlayEnabled = false;
+    let overlayAlpha = 0.6;
+    let overlayX = 0;
+    let overlayY = 0;
+
+    const renderOverlayList = () => {
+      overlayList.innerHTML = "";
+      overlayImages.forEach((img, index) => {
+        const item = document.createElement("span");
+        item.textContent = `${index + 1}: ${img.name || "image"}`;
+        if (index === overlayIndex) {
+          item.style.background = "#4f4f73";
+        }
+        overlayList.appendChild(item);
+      });
+    };
+
+    const updateOverlay = () => {
+      if (!overlayImages.length) {
+        overlayImage.removeAttribute("src");
+        return;
+      }
+      overlayImage.src = overlayImages[overlayIndex].src;
+      overlayImage.style.opacity = overlayAlpha;
+      overlayImage.style.transform = `translate(${overlayX}px, ${overlayY}px)`;
+      overlayOpacity.textContent = overlayAlpha.toFixed(2);
+      overlayPos.textContent = `${overlayX},${overlayY}`;
+      renderOverlayList();
+    };
+
+    overlayInput.addEventListener("change", (event) => {
+      const files = Array.from(event.target.files || []).slice(0, 4);
+      overlayImages = [];
+      let loaded = 0;
+      files.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          overlayImages[index] = { src: e.target.result, name: file.name };
+          loaded += 1;
+          if (loaded === files.length) {
+            overlayIndex = 0;
+            updateOverlay();
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    const toggleOverlay = () => {
+      overlayEnabled = !overlayEnabled;
+      overlayPanel.classList.toggle("active", overlayEnabled);
+      overlayImage.style.display = overlayEnabled ? "block" : "none";
+    };
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key.toLowerCase() === "o") {
+        toggleOverlay();
+      }
+
+      if (!overlayEnabled) return;
+
+      if (["1", "2", "3", "4"].includes(event.key)) {
+        const idx = Number(event.key) - 1;
+        if (overlayImages[idx]) {
+          overlayIndex = idx;
+          updateOverlay();
+        }
+      }
+
+      if (event.key === "+" || event.key === "=") {
+        overlayAlpha = Math.min(1, overlayAlpha + 0.05);
+        updateOverlay();
+      }
+
+      if (event.key === "-") {
+        overlayAlpha = Math.max(0, overlayAlpha - 0.05);
+        updateOverlay();
+      }
+
+      if (event.key === "ArrowUp") {
+        overlayY -= 1;
+        updateOverlay();
+      }
+
+      if (event.key === "ArrowDown") {
+        overlayY += 1;
+        updateOverlay();
+      }
+
+      if (event.key === "ArrowLeft") {
+        overlayX -= 1;
+        updateOverlay();
+      }
+
+      if (event.key === "ArrowRight") {
+        overlayX += 1;
+        updateOverlay();
+      }
+    });
+
+    updatePrice();
+    updateTimer();
+    overlayImage.style.display = "none";
+  </script>
+</body>
+</html>
