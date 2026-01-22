@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tap Flight — Прогноз</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: #0b0b14;
+      --surface: #151626;
+      --surface-2: #1b1c2f;
+      --surface-3: #22243b;
+      --text: #eef0ff;
+      --muted: #9aa0c4;
+      --accent: #9b5cff;
+      --accent-2: #5ee2ff;
+      --up: #34d399;
+      --down: #f472b6;
+      --warning: #facc15;
+      --border: rgba(255, 255, 255, 0.08);
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1b1d33 0%, #0b0b14 45%, #08080f 100%);
+      color: var(--text);
+      padding-bottom: 24px;
+    }
+
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 16px 32px;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(11, 11, 20, 0.9);
+      backdrop-filter: blur(16px);
+      padding: 18px 0 12px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 16px 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .brand svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .connect-btn {
+      background: linear-gradient(135deg, var(--accent-2), #8af7ff);
+      color: #07131e;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 12px 20px rgba(94, 226, 255, 0.4);
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      font-size: 16px;
+      color: var(--muted);
+    }
+
+    .tab {
+      cursor: pointer;
+    }
+
+    .tab.active {
+      color: var(--text);
+      position: relative;
+      font-weight: 700;
+    }
+
+    .tab.active::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: -10px;
+      width: 46px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: 999px;
+    }
+
+    .pair-switch {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      padding: 0 16px;
+    }
+
+    .pair {
+      flex: 1;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 10px 0;
+      text-align: center;
+      color: var(--muted);
+      border: 1px solid transparent;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .pair.active {
+      background: linear-gradient(135deg, rgba(94, 226, 255, 0.2), rgba(155, 92, 255, 0.2));
+      color: var(--text);
+      border-color: rgba(94, 226, 255, 0.35);
+    }
+
+    .price-card {
+      margin: 16px;
+      background: var(--surface-2);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .price-card h2 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .price-meta {
+      text-align: right;
+    }
+
+    .price-meta span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .timer {
+      margin: 0 16px;
+      background: var(--surface-3);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+
+    .timer svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .carousel {
+      margin-top: 20px;
+      padding-left: 16px;
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 12px;
+    }
+
+    .carousel::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .carousel::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 999px;
+    }
+
+    .prediction-card {
+      min-width: 280px;
+      background: var(--surface-2);
+      border-radius: var(--radius-xl);
+      padding: 16px;
+      border: 1px solid var(--border);
+      scroll-snap-align: start;
+      position: relative;
+      box-shadow: var(--shadow);
+    }
+
+    .prediction-card.active {
+      outline: 2px solid rgba(94, 226, 255, 0.5);
+      background: linear-gradient(160deg, rgba(94, 226, 255, 0.1), rgba(155, 92, 255, 0.12));
+    }
+
+    .card-label {
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .status {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .status.active { color: var(--accent-2); }
+    .status.next { color: var(--accent); }
+    .status.later { color: var(--warning); }
+    .status.expired { color: #f87171; }
+
+    .card-price {
+      font-size: 26px;
+      font-weight: 700;
+      margin: 14px 0 6px;
+    }
+
+    .card-sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+
+    .card-data {
+      background: rgba(9, 10, 18, 0.45);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .card-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .actions {
+      margin: 20px 16px 10px;
+      background: var(--surface-2);
+      border-radius: var(--radius-xl);
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .action-btn {
+      border: none;
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #041312;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .action-btn.up { background: linear-gradient(135deg, #8dffc1, #34d399); }
+    .action-btn.down { background: linear-gradient(135deg, #fca5a5, #f472b6); }
+
+    .chainlink {
+      position: fixed;
+      bottom: 24px;
+      right: 16px;
+      background: rgba(11, 11, 20, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      z-index: 12;
+      box-shadow: var(--shadow);
+    }
+
+    .chainlink svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.25);
+      pointer-events: none;
+    }
+
+    .overlay.active { display: flex; }
+
+    .overlay img {
+      width: min(100%, 480px);
+      max-height: 100%;
+      object-fit: contain;
+      opacity: var(--overlay-opacity, 0.6);
+    }
+
+    .overlay-hint {
+      position: fixed;
+      top: 70px;
+      right: 16px;
+      background: rgba(0, 0, 0, 0.55);
+      color: #fff;
+      font-size: 11px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      z-index: 31;
+      display: none;
+    }
+
+    .overlay-hint.active { display: block; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 2l4 4-2 2 5 5-3 3-5-5-2 2-4-4 7-7z" fill="#5ee2ff"/>
+          <path d="M5 19l4-1-3-3-1 4z" fill="#9b5cff"/>
+        </svg>
+        Tap Flight
+      </div>
+      <button class="connect-btn">Подключиться</button>
+    </div>
+    <div class="tabs">
+      <div class="tab active" data-tab="forecast">Прогноз</div>
+      <div class="tab" data-tab="play">Играть</div>
+    </div>
+  </header>
+
+  <main class="app">
+    <section class="tab-panel active" id="tab-forecast">
+      <section class="pair-switch" aria-label="Выбор пары">
+        <button class="pair active" data-symbol="BTCUSDT" data-context="forecast">BTC</button>
+        <button class="pair" data-symbol="ETHUSDT" data-context="forecast">ETH</button>
+        <button class="pair" data-symbol="BNBUSDT" data-context="forecast">BNB</button>
+      </section>
+
+      <section class="price-card">
+        <div>
+          <h2 id="price">—</h2>
+          <div class="card-sub" id="price-change">—</div>
+        </div>
+        <div class="price-meta">
+          <strong id="symbol">BTCUSDT</strong>
+          <span>Oracle: Binance</span>
+        </div>
+      </section>
+
+      <div class="timer" id="timer">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" stroke="#9aa0c4" stroke-width="2"/>
+          <path d="M12 7v6l4 2" stroke="#9aa0c4" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <strong id="timer-value">05:00</strong>
+      </div>
+
+      <section class="carousel" aria-label="Карусель прогнозов">
+        <article class="prediction-card">
+          <div class="card-label">Закрыт</div>
+          <div class="status expired">Expired</div>
+          <div class="card-price">$61,980.25</div>
+          <div class="card-sub">Раунд завершен</div>
+          <div class="card-data">
+            <div class="card-row"><span>Результат</span><strong>UP</strong></div>
+            <div class="card-row"><span>Выплата</span><strong>2.3x</strong></div>
+            <div class="card-row"><span>Пул</span><strong>$40,320</strong></div>
+          </div>
+        </article>
+
+        <article class="prediction-card active">
+          <div class="card-label">Up trend</div>
+          <div class="status active">Active</div>
+          <div class="card-price" id="active-price">—</div>
+          <div class="card-sub">2.0x Выплата</div>
+          <div class="card-data">
+            <div class="card-row"><span>Цена закрытия</span><strong id="close-price">—</strong></div>
+            <div class="card-row"><span>Зафиксирована</span><strong id="start-price">—</strong></div>
+            <div class="card-row"><span>Объем пула</span><strong>$48,120</strong></div>
+          </div>
+        </article>
+
+        <article class="prediction-card">
+          <div class="card-label">Готовится</div>
+          <div class="status next">Next</div>
+          <div class="card-price">$62,530.00</div>
+          <div class="card-sub">Старт через 02:10</div>
+          <div class="card-data">
+            <div class="card-row"><span>Up pool</span><strong>$18,400</strong></div>
+            <div class="card-row"><span>Down pool</span><strong>$21,900</strong></div>
+            <div class="card-row"><span>Мультипликатор</span><strong>2.1x</strong></div>
+          </div>
+        </article>
+
+        <article class="prediction-card">
+          <div class="card-label">Запланировано</div>
+          <div class="status later">Later</div>
+          <div class="card-price">$62,740.40</div>
+          <div class="card-sub">Через 15:00</div>
+          <div class="card-data">
+            <div class="card-row"><span>Up pool</span><strong>$12,900</strong></div>
+            <div class="card-row"><span>Down pool</span><strong>$10,440</strong></div>
+            <div class="card-row"><span>Шанс</span><strong>56%</strong></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="actions">
+        <button class="action-btn up">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 5l6 8h-4v6H10v-6H6l6-8z" fill="#0b1f19"/>
+          </svg>
+          Занять ВВЕРХ
+        </button>
+        <button class="action-btn down">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 19l-6-8h4V5h4v6h4l-6 8z" fill="#2b0f1f"/>
+          </svg>
+          Занять ВНИЗ
+        </button>
+      </section>
+    </section>
+
+    <section class="tab-panel" id="tab-play">
+      <section class="pair-switch" aria-label="Выбор пары демо">
+        <button class="pair active" data-symbol="BTCUSDT" data-context="play">BTC</button>
+        <button class="pair" data-symbol="ETHUSDT" data-context="play">ETH</button>
+        <button class="pair" data-symbol="BNBUSDT" data-context="play">BNB</button>
+      </section>
+
+      <section class="price-card">
+        <div>
+          <h2 id="price-demo">—</h2>
+          <div class="card-sub" id="price-change-demo">Демо счёт • виртуальные деньги</div>
+        </div>
+        <div class="price-meta">
+          <strong id="symbol-demo">BTCUSDT</strong>
+          <span>Демо режим</span>
+        </div>
+      </section>
+
+      <div class="timer" id="timer-demo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" stroke="#9aa0c4" stroke-width="2"/>
+          <path d="M12 7v6l4 2" stroke="#9aa0c4" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <strong id="timer-value-demo">05:00</strong>
+      </div>
+
+      <section class="carousel" aria-label="Карусель демо прогнозов">
+        <article class="prediction-card">
+          <div class="card-label">Закрыт</div>
+          <div class="status expired">Expired</div>
+          <div class="card-price">$1,980.25</div>
+          <div class="card-sub">Демо раунд завершен</div>
+          <div class="card-data">
+            <div class="card-row"><span>Результат</span><strong>DOWN</strong></div>
+            <div class="card-row"><span>Выплата</span><strong>1.8x</strong></div>
+            <div class="card-row"><span>Пул</span><strong>$8,120</strong></div>
+          </div>
+        </article>
+
+        <article class="prediction-card active">
+          <div class="card-label">Up trend</div>
+          <div class="status active">Active</div>
+          <div class="card-price" id="active-price-demo">—</div>
+          <div class="card-sub">2.0x Демо выплата</div>
+          <div class="card-data">
+            <div class="card-row"><span>Цена закрытия</span><strong id="close-price-demo">—</strong></div>
+            <div class="card-row"><span>Зафиксирована</span><strong id="start-price-demo">—</strong></div>
+            <div class="card-row"><span>Демо пул</span><strong>$12,840</strong></div>
+          </div>
+        </article>
+
+        <article class="prediction-card">
+          <div class="card-label">Готовится</div>
+          <div class="status next">Next</div>
+          <div class="card-price">$2,030.00</div>
+          <div class="card-sub">Старт через 01:40</div>
+          <div class="card-data">
+            <div class="card-row"><span>Up pool</span><strong>$4,400</strong></div>
+            <div class="card-row"><span>Down pool</span><strong>$5,900</strong></div>
+            <div class="card-row"><span>Мультипликатор</span><strong>2.0x</strong></div>
+          </div>
+        </article>
+
+        <article class="prediction-card">
+          <div class="card-label">Запланировано</div>
+          <div class="status later">Later</div>
+          <div class="card-price">$2,170.40</div>
+          <div class="card-sub">Через 08:00</div>
+          <div class="card-data">
+            <div class="card-row"><span>Up pool</span><strong>$3,900</strong></div>
+            <div class="card-row"><span>Down pool</span><strong>$3,440</strong></div>
+            <div class="card-row"><span>Шанс</span><strong>52%</strong></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="actions">
+        <button class="action-btn up">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 5l6 8h-4v6H10v-6H6l6-8z" fill="#0b1f19"/>
+          </svg>
+          Демо ВВЕРХ
+        </button>
+        <button class="action-btn down">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 19l-6-8h4V5h4v6h4l-6 8z" fill="#2b0f1f"/>
+          </svg>
+          Демо ВНИЗ
+        </button>
+      </section>
+    </section>
+  </main>
+
+  <div class="chainlink">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M12 2l8.66 5v10L12 22l-8.66-5V7L12 2z" stroke="#5ee2ff" stroke-width="2"/>
+      <path d="M12 7l4.33 2.5v5L12 17l-4.33-2.5v-5L12 7z" fill="#5ee2ff"/>
+    </svg>
+    Chainlink Oracle
+  </div>
+
+  <div class="overlay" id="overlay">
+    <img id="overlay-image" alt="reference" src="https://placehold.co/480x960/png" />
+  </div>
+  <div class="overlay-hint" id="overlay-hint">Overlay O / 1-4 / +/-</div>
+
+  <script type="module">
+    const webApp = window.Telegram?.WebApp;
+    if (webApp) {
+      webApp.ready();
+      webApp.expand();
+    }
+
+    const tabs = document.querySelectorAll('.tab');
+    const panels = document.querySelectorAll('.tab-panel');
+
+    const pairs = document.querySelectorAll('.pair');
+    const symbolEl = document.getElementById('symbol');
+    const symbolDemoEl = document.getElementById('symbol-demo');
+    const priceEl = document.getElementById('price');
+    const priceDemoEl = document.getElementById('price-demo');
+    const changeEl = document.getElementById('price-change');
+    const changeDemoEl = document.getElementById('price-change-demo');
+    const timerValue = document.getElementById('timer-value');
+    const timerValueDemo = document.getElementById('timer-value-demo');
+    const startPriceEl = document.getElementById('start-price');
+    const closePriceEl = document.getElementById('close-price');
+    const activePriceEl = document.getElementById('active-price');
+    const startPriceDemoEl = document.getElementById('start-price-demo');
+    const closePriceDemoEl = document.getElementById('close-price-demo');
+    const activePriceDemoEl = document.getElementById('active-price-demo');
+
+    const basePrices = {
+      BTCUSDT: 62482.1,
+      ETHUSDT: 3482.4,
+      BNBUSDT: 612.8,
+    };
+
+    let currentSymbol = 'BTCUSDT';
+    let currentDemoSymbol = 'BTCUSDT';
+    let timer = 300;
+    let timerDemo = 300;
+    let mockDemoPrice = basePrices[currentDemoSymbol];
+    let livePrice = basePrices[currentSymbol];
+
+    const formatPrice = (value) =>
+      `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+    const fetchBinancePrice = async (symbol) => {
+      const response = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
+      if (!response.ok) {
+        throw new Error('Binance price error');
+      }
+      const data = await response.json();
+      return Number.parseFloat(data.price);
+    };
+
+    const updateLivePrice = async () => {
+      try {
+        livePrice = await fetchBinancePrice(currentSymbol);
+        const delta = ((livePrice - basePrices[currentSymbol]) / basePrices[currentSymbol]) * 100;
+        priceEl.textContent = formatPrice(livePrice);
+        activePriceEl.textContent = formatPrice(livePrice);
+        closePriceEl.textContent = formatPrice(livePrice + (Math.random() - 0.5) * 40);
+        changeEl.textContent = `${delta >= 0 ? '+' : ''}${delta.toFixed(2)}% за 24ч`;
+      } catch (error) {
+        priceEl.textContent = formatPrice(livePrice);
+        changeEl.textContent = 'Ошибка Binance';
+      }
+    };
+
+    const updateDemoPrice = () => {
+      const jitter = (Math.random() - 0.5) * (currentDemoSymbol === 'BTCUSDT' ? 120 : 8);
+      mockDemoPrice = Math.max(1, mockDemoPrice + jitter);
+      priceDemoEl.textContent = formatPrice(mockDemoPrice);
+      activePriceDemoEl.textContent = formatPrice(mockDemoPrice);
+      closePriceDemoEl.textContent = formatPrice(mockDemoPrice + (Math.random() - 0.5) * 40);
+      changeDemoEl.textContent = 'Демо счёт • виртуальные деньги';
+    };
+
+    const updateTimer = () => {
+      timer = timer <= 0 ? 300 : timer - 1;
+      const minutes = String(Math.floor(timer / 60)).padStart(2, '0');
+      const seconds = String(timer % 60).padStart(2, '0');
+      timerValue.textContent = `${minutes}:${seconds}`;
+      if (timer === 300) {
+        startPriceEl.textContent = formatPrice(livePrice - (Math.random() * 100));
+      }
+    };
+
+    const updateTimerDemo = () => {
+      timerDemo = timerDemo <= 0 ? 300 : timerDemo - 1;
+      const minutes = String(Math.floor(timerDemo / 60)).padStart(2, '0');
+      const seconds = String(timerDemo % 60).padStart(2, '0');
+      timerValueDemo.textContent = `${minutes}:${seconds}`;
+      if (timerDemo === 300) {
+        startPriceDemoEl.textContent = formatPrice(mockDemoPrice - (Math.random() * 100));
+      }
+    };
+
+    const setPair = (symbol, button, context) => {
+      if (context === 'forecast') {
+        currentSymbol = symbol;
+        symbolEl.textContent = symbol;
+        livePrice = basePrices[symbol];
+        updateLivePrice();
+      } else {
+        currentDemoSymbol = symbol;
+        symbolDemoEl.textContent = symbol;
+        mockDemoPrice = basePrices[symbol];
+        updateDemoPrice();
+      }
+      pairs.forEach((item) => {
+        if (item.dataset.context === context) {
+          item.classList.remove('active');
+        }
+      });
+      button.classList.add('active');
+    };
+
+    pairs.forEach((btn) => {
+      btn.addEventListener('click', () => setPair(btn.dataset.symbol, btn, btn.dataset.context));
+    });
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((item) => item.classList.remove('active'));
+        panels.forEach((panel) => panel.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+      });
+    });
+
+    setInterval(updateLivePrice, 5000);
+    setInterval(updateDemoPrice, 2200);
+    setInterval(updateTimer, 1000);
+    setInterval(updateTimerDemo, 1000);
+    updateLivePrice();
+    updateDemoPrice();
+    updateTimer();
+    updateTimerDemo();
+
+    const overlay = document.getElementById('overlay');
+    const overlayImage = document.getElementById('overlay-image');
+    const overlayHint = document.getElementById('overlay-hint');
+    const overlaySources = [
+      'https://placehold.co/480x960/png?text=Reference+1',
+      'https://placehold.co/480x960/png?text=Reference+2',
+      'https://placehold.co/480x960/png?text=Reference+3',
+      'https://placehold.co/480x960/png?text=Reference+4',
+    ];
+    let overlayIndex = 0;
+    let overlayOpacity = 0.6;
+
+    const setOverlayState = (active) => {
+      overlay.classList.toggle('active', active);
+      overlayHint.classList.toggle('active', active);
+    };
+
+    const setOverlayImage = (index) => {
+      overlayIndex = index;
+      overlayImage.src = overlaySources[overlayIndex];
+    };
+
+    const updateOverlayOpacity = (delta) => {
+      overlayOpacity = Math.min(1, Math.max(0.1, overlayOpacity + delta));
+      overlay.style.setProperty('--overlay-opacity', overlayOpacity.toFixed(2));
+    };
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'o' || event.key === 'O') {
+        setOverlayState(!overlay.classList.contains('active'));
+      }
+      if (event.key >= '1' && event.key <= '4') {
+        setOverlayImage(Number(event.key) - 1);
+      }
+      if (event.key === '+') {
+        updateOverlayOpacity(0.05);
+      }
+      if (event.key === '-') {
+        updateOverlayOpacity(-0.05);
+      }
+    });
+
+    setOverlayImage(0);
+    updateOverlayOpacity(0);
+  </script>
+</body>
+</html>
