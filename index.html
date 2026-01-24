@@ -1,216 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prediction Market MVP</title>
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prediction Market MVP</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<style>
+  .scroll-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    padding-bottom: 1rem;
+  }
+  .scroll-container::-webkit-scrollbar { display: none; }
+  .card { min-width: 250px; flex-shrink: 0; }
+  .modal-bg { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:50; }
+</style>
 </head>
 <body class="bg-gray-100">
-  <div id="root"></div>
+<div id="root"></div>
+<script>
+const { useState, useEffect } = React;
+const MIN_BET = 5; 
+const ROUND_TIME = 30; // Таймер 30 секунд
 
-  <script type="text/babel">
-    const { useState, useEffect } = React;
+function PredictionApp() {
+  const ASSET_PAIRS = ["BTC/USDT","ETH/USDT","BNB/USDT","TON/USDT"];
 
-    function PredictionApp() {
-      const ASSETS = ["BTC","ETH","BNB","TON"];
-      const ROUND_TIME = 300;
-      const LOCK_TIME = 1;
-      const MIN_BET = 5;
-      const FEE_PERCENT = 5;
-
-      const [assetStates, setAssetStates] = useState(() => {
-        const init = {};
-        ASSETS.forEach(a => {
-          init[a] = {
-            price: 0,
-            lockedPrice: null,
-            previousLockedPrice: null,
-            direction: null,
-            timer: ROUND_TIME,
-            status: "betting",
-            bets: [],
-            prizePool: 0,
-            lastPrize: null
-          };
-        });
-        return init;
-      });
-
-      const [currentAsset, setCurrentAsset] = useState("TON");
-      const [walletConnected, setWalletConnected] = useState(false);
-      const [balance, setBalance] = useState(0);
-
-      const connectWallet = () => {
-        setWalletConnected(true);
-        setBalance(100);
+  const [tab, setTab] = useState("play");
+  const [assetStates, setAssetStates] = useState(() => {
+    const init = {};
+    ASSET_PAIRS.forEach(pair => {
+      init[pair] = {
+        currentRound: { price:0, lockedPrice:null, previousClosed:null, timer:ROUND_TIME, status:"active" },
+        nextRound: { prizePool:0, prizePoolUp:0, prizePoolDown:0, betPlaced: null },
+        history: []
       };
+    });
+    return init;
+  });
 
-      const handleBet = (asset, dir) => {
-        if(!walletConnected) return alert("Connect your TON Wallet first");
-        if(balance < MIN_BET) return alert("Insufficient balance");
+  const [balance, setBalance] = useState(100);
+  const [walletConnected, setWalletConnected] = useState(false);
+  const [currentPair, setCurrentPair] = useState("TON/USDT");
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalSide, setModalSide] = useState(null);
+  const [modalAmount, setModalAmount] = useState("");
+
+  const connectWallet = () => setWalletConnected(true);
+
+  const openBetModal = (side) => {
+    setModalSide(side);
+    setModalAmount("");
+    setModalOpen(true);
+  };
+
+  const confirmBet = () => {
+    const amount = parseFloat(modalAmount);
+    if(isNaN(amount) || amount < MIN_BET) return alert(`Минимальная ставка: ${MIN_BET} TON`);
+    if(tab==="play" && amount > balance) return alert("Недостаточно баланса");
+
+    setAssetStates(prev => {
+      const updated = {...prev};
+      const next = updated[currentPair].nextRound;
+      next.prizePool += amount;
+      if(modalSide==="UP") next.prizePoolUp += amount;
+      else next.prizePoolDown += amount;
+      next.betPlaced = modalSide;
+      return updated;
+    });
+
+    if(tab==="play") setBalance(prev => prev - amount);
+    setModalOpen(false);
+  };
+
+  // Fetch prices
+  useEffect(() => {
+    const fetchPrices = async () => {
+      try {
+        const symbols = {"BTC/USDT":"BTCUSDT","ETH/USDT":"ETHUSDT","BNB/USDT":"BNBUSDT","TON/USDT":"TONUSDT"};
+        const fetches = Object.values(symbols).map(s=>fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${s}`));
+        const responses = await Promise.all(fetches);
+        const data = await Promise.all(responses.map(r=>r.json()));
         setAssetStates(prev => {
           const updated = {...prev};
-          const newBet = {direction: dir, result: null, amount: MIN_BET};
-          updated[asset] = {
-            ...updated[asset],
-            direction: dir,
-            bets: [...updated[asset].bets, newBet],
-            prizePool: updated[asset].prizePool + MIN_BET
-          };
+          ASSET_PAIRS.forEach((pair,i) => updated[pair].currentRound.price = parseFloat(data[i].price));
           return updated;
         });
-        setBalance(prev => prev - MIN_BET);
-      };
+      } catch(e){ console.error("Error fetching prices", e);}
+    };
+    fetchPrices();
+    const interval = setInterval(fetchPrices,5000);
+    return ()=>clearInterval(interval);
+  }, []);
 
-      // Fetch real prices from Binance API
-      useEffect(() => {
-        const fetchPrices = async () => {
-          try {
-            const [resBTC, resETH, resBNB, resTON] = await Promise.all([
-              fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"),
-              fetch("https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT"),
-              fetch("https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT"),
-              fetch("https://api.binance.com/api/v3/ticker/price?symbol=TONUSDT")
-            ]);
-
-            const [dataBTC, dataETH, dataBNB, dataTON] = await Promise.all([
-              resBTC.json(), resETH.json(), resBNB.json(), resTON.json()
-            ]);
-
-            setAssetStates(prev => ({
-              ...prev,
-              BTC: {...prev.BTC, price: parseFloat(dataBTC.price)},
-              ETH: {...prev.ETH, price: parseFloat(dataETH.price)},
-              BNB: {...prev.BNB, price: parseFloat(dataBNB.price)},
-              TON: {...prev.TON, price: parseFloat(dataTON.price)},
-            }));
-          } catch(e) {
-            console.error("Error fetching prices", e);
-          }
-        };
-
-        fetchPrices();
-        const interval = setInterval(fetchPrices, 5000);
-        return () => clearInterval(interval);
-      }, []);
-
-      // Timer and round logic
-      useEffect(() => {
-        const interval = setInterval(() => {
-          setAssetStates(prev => {
-            const updated = {...prev};
-            ASSETS.forEach(a => {
-              const state = updated[a];
-              if(state.timer <= 0){
-                if(state.status === "betting"){
-                  state.previousLockedPrice = state.lockedPrice; // сохранить для изменения относительно прошлого раунда
-                  state.lockedPrice = state.price;
-                  state.status = "locked";
-                  state.timer = LOCK_TIME;
-                } else if(state.status === "locked"){
-                  state.status = "ended";
-                  state.bets.forEach(bet => {
-                    bet.result = state.price > state.lockedPrice ? (bet.direction === "UP") : (bet.direction === "DOWN");
-                    if(bet.result) setBalance(prev => prev + bet.amount * (1 - FEE_PERCENT/100));
-                  });
-                  state.lastPrize = {
-                    lockedPrice: state.lockedPrice,
-                    prizePool: state.prizePool,
-                    result: state.price > state.lockedPrice ? "UP" : "DOWN"
-                  };
-                  state.prizePool = 0;
-                  state.bets = [];
-                }
-              } else {
-                state.timer -= 1;
-              }
+  // Timer
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAssetStates(prev => {
+        const updated = {...prev};
+        ASSET_PAIRS.forEach(pair=>{
+          const round = updated[pair].currentRound;
+          if(round.timer>0) round.timer-=1;
+          else if(round.status==="active"){
+            round.status="ended";
+            round.previousClosed = round.price;
+            round.lockedPrice = round.previousClosed;
+            updated[pair].history.unshift({
+              lockedPrice: round.lockedPrice,
+              prizePool: updated[pair].nextRound.prizePool,
+              result: updated[pair].nextRound.prizePoolUp>updated[pair].nextRound.prizePoolDown?"UP":"DOWN"
             });
-            return updated;
-          });
-        }, 1000);
-        return () => clearInterval(interval);
-      }, []);
+            updated[pair].nextRound = {prizePool:0,prizePoolUp:0,prizePoolDown:0, betPlaced:null};
+            round.timer=ROUND_TIME;
+            round.status="active";
+          }
+        });
+        return updated;
+      });
+    },1000);
+    return ()=>clearInterval(interval);
+  }, []);
 
-      const state = assetStates[currentAsset];
-      const priceChange = state.previousLockedPrice ? (state.price - state.previousLockedPrice).toFixed(2) : null;
+  const state = assetStates[currentPair];
+  const round = state.currentRound;
+  const priceChange = round.lockedPrice!==null ? (round.price - round.lockedPrice).toFixed(2) : null;
+  const oddsUp = state.nextRound.prizePoolUp>0 ? (state.nextRound.prizePool/state.nextRound.prizePoolUp).toFixed(2):1;
+  const oddsDown = state.nextRound.prizePoolDown>0 ? (state.nextRound.prizePool/state.nextRound.prizePoolDown).toFixed(2):1;
+  const formatTime = t => { const m=Math.floor(t/60), s=t%60; return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; };
 
-      return (
-        <div className="min-h-screen p-4">
-          <div className="max-w-md mx-auto bg-white rounded-2xl shadow p-4">
-            <h1 className="text-xl font-bold mb-2">Prediction Market</h1>
+  return React.createElement('div',{className:"min-h-screen p-4"},
+    React.createElement('div',{className:"max-w-3xl mx-auto bg-white rounded-2xl shadow p-4"},
 
-            {!walletConnected && <button onClick={connectWallet} className="mb-4 w-full py-2 rounded-xl bg-yellow-400 font-bold">Connect TON Wallet</button>}
-            {walletConnected && <div className="mb-4 text-sm">Balance: {balance.toFixed(2)} TON</div>}
+      // Tabs
+      React.createElement('div',{className:"flex mb-4"},
+        React.createElement('button',{onClick:()=>setTab("forecast"),className:`flex-1 py-2 ${tab==="forecast"?"bg-blue-600 text-white":"bg-gray-200"}`},"ПРОГНОЗ"),
+        React.createElement('button',{onClick:()=>setTab("play"),className:`flex-1 py-2 ${tab==="play"?"bg-blue-600 text-white":"bg-gray-200"}`},"ИГРАТЬ")
+      ),
 
-            <div className="flex gap-2 mb-4">
-              {ASSETS.map(a => (
-                <button key={a} onClick={() => setCurrentAsset(a)} className={`px-3 py-1 rounded-full text-sm ${currentAsset===a?"bg-blue-600 text-white":"bg-gray-200"}`}>
-                  {a}
-                </button>
-              ))}
-            </div>
+      // Wallet/Demo
+      tab==="forecast" ? (!walletConnected ? React.createElement('button',{onClick:connectWallet,className:"mb-4 w-full py-2 rounded-xl bg-yellow-400 font-bold"},"Connect TON Wallet")
+      : React.createElement('div',{className:"mb-4 text-sm"},"Connected")) 
+      : React.createElement('div',{className:"mb-4 text-sm"},"Demo Balance: "+balance.toFixed(2)+" TON"),
 
-            <div className="flex justify-between mb-2">
-              <span>Live price</span>
-              <span className="font-mono">${state.price}</span>
-            </div>
+      // Pair selector
+      React.createElement('div',{className:"flex gap-2 mb-4"}, ASSET_PAIRS.map(pair=>React.createElement('button',{key:pair,onClick:()=>setCurrentPair(pair),className:`px-3 py-1 rounded-full text-sm ${currentPair===pair?'bg-blue-600 text-white':'bg-gray-200'}`}, pair))),
 
-            {state.previousLockedPrice && (
-              <div className="flex justify-between mb-2 text-sm">
-                <span>Change vs last round</span>
-                <span className={`font-mono ${priceChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>{priceChange}</span>
-              </div>
-            )}
+      // Scrollable rounds
+      React.createElement('div',{className:"scroll-container"},
+        // До 3 последних прошедших раундов слева
+        state.history.slice(0,3).reverse().map((h,i)=>React.createElement('div',{key:i,className:"card bg-gray-50 p-4 rounded-xl shadow"},
+          React.createElement('div',{className:"font-bold mb-2"},"PREV ROUND"),
+          React.createElement('div',null,"Locked Price: $"+h.lockedPrice),
+          React.createElement('div',null,"Result: "+h.result),
+          React.createElement('div',null,"Prize Pool: $"+h.prizePool)
+        )),
 
-            {state.lockedPrice && (
-              <div className="flex justify-between mb-2 text-sm">
-                <span>Locked price</span>
-                <span className="font-mono">${state.lockedPrice}</span>
-              </div>
-            )}
+        // LIVE
+        React.createElement('div',{className:"card bg-gray-50 p-4 rounded-xl shadow"},
+          React.createElement('div',{className:"font-bold mb-2"},"CURRENT ROUND"),
+          React.createElement('div',{className:"flex justify-between mb-1"}, React.createElement('span',null,"Price"), React.createElement('span',null,"$"+round.price)),
+          priceChange!==null && React.createElement('div',{className:`font-mono ${priceChange>=0?'text-green-600':'text-red-600'}`}, priceChange>=0?`+${priceChange}`:priceChange),
+          React.createElement('div',{className:"flex justify-between mt-2"}, React.createElement('span',null,"Locked Price"), React.createElement('span',null,"$"+(round.lockedPrice||0))),
+          React.createElement('div',{className:"text-center mt-2 text-sm mb-1"}, "Prize Pool: $"+state.nextRound.prizePool),
+          React.createElement('div',{className:"text-center mt-2 text-2xl font-bold"}, formatTime(round.timer))
+        ),
 
-            <div className="my-4 text-center">
-              <div className="text-xs text-gray-400">Min bet: {MIN_BET} TON · Fee: {FEE_PERCENT}%</div>
-              <div className="text-2xl font-bold">{state.timer}s</div>
-              <div className="text-xs text-gray-500">{state.status.toUpperCase()}</div>
-            </div>
+        // NEXT
+        React.createElement('div',{className:"card bg-gray-50 p-4 rounded-xl shadow"},
+          React.createElement('div',{className:"font-bold mb-2"},"NEXT ROUND"),
+          React.createElement('div',{className:"flex justify-between mb-2"}, React.createElement('span',null,"Prize Pool"), React.createElement('span',null,"$"+state.nextRound.prizePool)),
+          React.createElement('div',{className:"grid grid-cols-2 gap-2 mt-2"},
+            React.createElement('button',{onClick:()=>openBetModal("UP"), className:`p-3 rounded-xl font-bold ${state.nextRound.betPlaced==="UP"?"bg-green-600 text-white":"bg-green-100"}`}, "UP (odds: "+oddsUp+")"),
+            React.createElement('button',{onClick:()=>openBetModal("DOWN"), className:`p-3 rounded-xl font-bold ${state.nextRound.betPlaced==="DOWN"?"bg-red-600 text-white":"bg-red-100"}`}, "DOWN (odds: "+oddsDown+")")
+          ),
+          state.nextRound.betPlaced && React.createElement('div',{className:"mt-2 text-center text-sm text-blue-600 font-bold"},"Bet placed: "+state.nextRound.betPlaced)
+        )
+      ),
 
-            {state.status === "betting" && walletConnected && (
-              <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => handleBet(currentAsset,"UP")} className={`p-3 rounded-xl font-bold ${state.direction === "UP" ? "bg-green-600 text-white" : "bg-green-100"}`}>UP</button>
-                <button onClick={() => handleBet(currentAsset,"DOWN")} className={`p-3 rounded-xl font-bold ${state.direction === "DOWN" ? "bg-red-600 text-white" : "bg-red-100"}`}>DOWN</button>
-              </div>
-            )}
+      // Modal
+      modalOpen && React.createElement('div',{className:"modal-bg"},
+        React.createElement('div',{className:"bg-white p-4 rounded-xl w-72 shadow"},
+          React.createElement('div',{className:"font-bold mb-2"},"Place your bet: "+modalSide),
+          React.createElement('input',{
+            type:"number",
+            value:modalAmount,
+            min: MIN_BET,
+            step:1,
+            onChange:e=>setModalAmount(e.target.value),
+            className:"w-full p-2 border rounded mb-2",
+            placeholder:`Amount (min ${MIN_BET})`
+          }),
+          React.createElement('div',{className:"flex justify-between"},
+            React.createElement('button',{onClick:confirmBet,className:"px-4 py-2 bg-blue-600 text-white rounded"},"Confirm"),
+            React.createElement('button',{onClick:()=>setModalOpen(false),className:"px-4 py-2 bg-gray-300 rounded"},"Cancel")
+          )
+        )
+      )
 
-            {state.status === "ended" && (
-              <div className="mt-4 text-center font-bold">
-                Result: {state.price > state.lockedPrice ? "UP" : "DOWN"}
-                {state.lastPrize && (
-                  <div className="mt-2 text-sm">
-                    Last Prize: Locked Price ${state.lastPrize.lockedPrice}, Prize Pool {state.lastPrize.prizePool} TON, Result {state.lastPrize.result}
-                  </div>
-                )}
-                <div className="mt-2 text-sm">
-                  Bets:
-                  <ul>
-                    {state.bets.map((b,i) => (
-                      <li key={i}>{b.direction} ({b.amount} TON) → {b.result ? "WIN" : "LOSE"}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    }
+    )
+  );
+}
 
-    ReactDOM.render(<PredictionApp />, document.getElementById('root'));
-  </script>
+ReactDOM.render(React.createElement(PredictionApp), document.getElementById('root'));
+</script>
 </body>
 </html>
