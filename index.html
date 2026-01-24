@@ -26,12 +26,15 @@
         const init = {};
         ASSETS.forEach(a => {
           init[a] = {
-            price: 300,
+            price: 0,
             lockedPrice: null,
+            previousLockedPrice: null,
             direction: null,
             timer: ROUND_TIME,
             status: "betting",
-            bets: []
+            bets: [],
+            prizePool: 0,
+            lastPrize: null
           };
         });
         return init;
@@ -56,24 +59,56 @@
           updated[asset] = {
             ...updated[asset],
             direction: dir,
-            bets: [...updated[asset].bets, newBet]
+            bets: [...updated[asset].bets, newBet],
+            prizePool: updated[asset].prizePool + MIN_BET
           };
-          // simulate backend call
-          console.log('Bet sent to backend', newBet);
           return updated;
         });
         setBalance(prev => prev - MIN_BET);
       };
 
+      // Fetch real prices from Binance API
+      useEffect(() => {
+        const fetchPrices = async () => {
+          try {
+            const [resBTC, resETH, resBNB, resTON] = await Promise.all([
+              fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"),
+              fetch("https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT"),
+              fetch("https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT"),
+              fetch("https://api.binance.com/api/v3/ticker/price?symbol=TONUSDT")
+            ]);
+
+            const [dataBTC, dataETH, dataBNB, dataTON] = await Promise.all([
+              resBTC.json(), resETH.json(), resBNB.json(), resTON.json()
+            ]);
+
+            setAssetStates(prev => ({
+              ...prev,
+              BTC: {...prev.BTC, price: parseFloat(dataBTC.price)},
+              ETH: {...prev.ETH, price: parseFloat(dataETH.price)},
+              BNB: {...prev.BNB, price: parseFloat(dataBNB.price)},
+              TON: {...prev.TON, price: parseFloat(dataTON.price)},
+            }));
+          } catch(e) {
+            console.error("Error fetching prices", e);
+          }
+        };
+
+        fetchPrices();
+        const interval = setInterval(fetchPrices, 5000);
+        return () => clearInterval(interval);
+      }, []);
+
+      // Timer and round logic
       useEffect(() => {
         const interval = setInterval(() => {
           setAssetStates(prev => {
             const updated = {...prev};
             ASSETS.forEach(a => {
               const state = updated[a];
-              state.price = +(state.price + (Math.random()-0.5)).toFixed(2);
               if(state.timer <= 0){
                 if(state.status === "betting"){
+                  state.previousLockedPrice = state.lockedPrice; // сохранить для изменения относительно прошлого раунда
                   state.lockedPrice = state.price;
                   state.status = "locked";
                   state.timer = LOCK_TIME;
@@ -83,6 +118,13 @@
                     bet.result = state.price > state.lockedPrice ? (bet.direction === "UP") : (bet.direction === "DOWN");
                     if(bet.result) setBalance(prev => prev + bet.amount * (1 - FEE_PERCENT/100));
                   });
+                  state.lastPrize = {
+                    lockedPrice: state.lockedPrice,
+                    prizePool: state.prizePool,
+                    result: state.price > state.lockedPrice ? "UP" : "DOWN"
+                  };
+                  state.prizePool = 0;
+                  state.bets = [];
                 }
               } else {
                 state.timer -= 1;
@@ -95,6 +137,7 @@
       }, []);
 
       const state = assetStates[currentAsset];
+      const priceChange = state.previousLockedPrice ? (state.price - state.previousLockedPrice).toFixed(2) : null;
 
       return (
         <div className="min-h-screen p-4">
@@ -116,6 +159,13 @@
               <span>Live price</span>
               <span className="font-mono">${state.price}</span>
             </div>
+
+            {state.previousLockedPrice && (
+              <div className="flex justify-between mb-2 text-sm">
+                <span>Change vs last round</span>
+                <span className={`font-mono ${priceChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>{priceChange}</span>
+              </div>
+            )}
 
             {state.lockedPrice && (
               <div className="flex justify-between mb-2 text-sm">
@@ -140,6 +190,11 @@
             {state.status === "ended" && (
               <div className="mt-4 text-center font-bold">
                 Result: {state.price > state.lockedPrice ? "UP" : "DOWN"}
+                {state.lastPrize && (
+                  <div className="mt-2 text-sm">
+                    Last Prize: Locked Price ${state.lastPrize.lockedPrice}, Prize Pool {state.lastPrize.prizePool} TON, Result {state.lastPrize.result}
+                  </div>
+                )}
                 <div className="mt-2 text-sm">
                   Bets:
                   <ul>
