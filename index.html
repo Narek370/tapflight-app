@@ -3,15 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TON Prediction - Real Prices</title>
+    <title>TON Prediction</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#1c1c1e">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
         :root {
             --tg-theme-bg-color: #1c1c1e;
@@ -97,38 +93,35 @@
         /* Таймер */
         .timer-container {
             background: linear-gradient(135deg, #3390ec 0%, #1c7cd6 100%);
-            border-radius: 16px;
-            padding: 12px 16px;
-            margin: 12px 16px;
+            border-radius: 20px;
+            padding: 16px;
+            margin: 16px;
             box-shadow: 0 8px 32px rgba(51, 144, 236, 0.3);
-            transition: all 0.3s ease;
         }
         
         .timer-digit {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
-            border-radius: 10px;
-            padding: 8px 10px;
+            border-radius: 12px;
+            padding: 12px 16px;
             font-variant-numeric: tabular-nums;
         }
         
-        /* Компактные кнопки пар */
-        .pair-button-compact {
-            background: rgba(255, 255, 255, 0.05);
+        /* Кнопки пар */
+        .pair-button {
+            background: var(--tg-theme-secondary-bg-color);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            border-radius: 14px;
             transition: all 0.2s ease;
             cursor: pointer;
-            padding: 8px 10px;
-            min-width: 0;
         }
         
-        .pair-button-compact:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateY(-1px);
+        .pair-button:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
         }
         
-        .pair-button-compact.selected {
+        .pair-button.selected {
             background: var(--tg-theme-button-color);
             border-color: var(--tg-theme-button-color);
         }
@@ -136,8 +129,8 @@
         /* Прогресс бар */
         .progress-bar-telegram {
             background: rgba(255, 255, 255, 0.1);
-            height: 4px;
-            border-radius: 2px;
+            height: 6px;
+            border-radius: 3px;
             overflow: hidden;
         }
         
@@ -193,106 +186,19 @@
         .text-muted {
             color: #8E8E93;
         }
-        
-        /* Иконки для крипты */
-        .crypto-icon {
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .btc-icon { background: #F7931A; color: white; }
-        .eth-icon { background: #627EEA; color: white; }
-        .bnb-icon { background: #F0B90B; color: #000; }
-        .ton-icon { background: #0098EA; color: white; }
-        
-        /* Анимации */
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        .animate-pulse {
-            animation: pulse 1s ease-in-out infinite;
-        }
-        
-        /* Туториал */
-        .tutorial-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            animation: slideIn 0.5s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateY(-20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-        
-        /* Индикатор обновления цен */
-        .price-update-indicator {
-            position: absolute;
-            top: 50%;
-            right: -12px;
-            width: 8px;
-            height: 8px;
-            background: #31D0AA;
-            border-radius: 50%;
-            animation: pulse 1s infinite;
-        }
-        
-        .price-loading {
-            opacity: 0.7;
-        }
-        
-        /* Статус API */
-        .api-status {
-            position: fixed;
-            bottom: 90px;
-            right: 16px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 8px 12px;
-            font-size: 11px;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .api-status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
-        
-        .api-status-online { background: #31D0AA; }
-        .api-status-offline { background: #ED4B9E; }
-        .api-status-loading { background: #3390ec; animation: pulse 1s infinite; }
     </style>
 </head>
 <body class="tg-safe-area">
     <div id="root"></div>
     
     <script>
-        const { useState, useEffect, useCallback, useMemo, useRef } = React;
+        const { useState, useEffect, useCallback, useMemo } = React;
         
         // Локализация
         const TRANSLATIONS = {
             en: {
                 title: "TON Prediction",
-                subtitle: "Real-time crypto predictions",
+                subtitle: "Predict crypto price movements",
                 balance: "Balance",
                 selectRound: "Selected: Round #",
                 swipeHint: "Swipe left/right to view other rounds",
@@ -326,8 +232,7 @@
                 priceLabels: {
                     lockedPrice: "Locked Price",
                     prizePool: "Prize Pool",
-                    lastPrice: "Last Price",
-                    updated: "Updated"
+                    lastPrice: "Last Price"
                 },
                 alerts: {
                     betPlaced: "Bet placed!",
@@ -335,26 +240,17 @@
                     oneBetOnly: "You can only place one bet per round!",
                     alreadyBet: "You already placed a bet in this round",
                     insufficientBalance: "Insufficient balance",
-                    amountRange: "Please enter amount between",
-                    priceUpdated: "Prices updated",
-                    apiOffline: "Using cached prices. Real-time updates paused."
+                    amountRange: "Please enter amount between"
                 },
                 loading: "Loading prediction rounds...",
                 timer: {
                     nextRound: "Next Round In",
                     liveRound: "Round Ends In"
-                },
-                history: "History",
-                myBets: "My Bets",
-                apiStatus: {
-                    online: "Live prices",
-                    offline: "Offline mode",
-                    loading: "Updating..."
                 }
             },
             ru: {
                 title: "Предсказания TON",
-                subtitle: "Прогнозы в реальном времени",
+                subtitle: "Прогнозируйте движение цен",
                 balance: "Баланс",
                 selectRound: "Выбрано: Раунд #",
                 swipeHint: "Свайпайте влево/вправо",
@@ -388,8 +284,7 @@
                 priceLabels: {
                     lockedPrice: "Фиксированная цена",
                     prizePool: "Призовой фонд",
-                    lastPrice: "Текущая цена",
-                    updated: "Обновлено"
+                    lastPrice: "Текущая цена"
                 },
                 alerts: {
                     betPlaced: "Ставка размещена!",
@@ -397,21 +292,12 @@
                     oneBetOnly: "Только одна ставка на раунд!",
                     alreadyBet: "Вы уже сделали ставку",
                     insufficientBalance: "Недостаточно средств",
-                    amountRange: "Введите сумму от",
-                    priceUpdated: "Цены обновлены",
-                    apiOffline: "Используем кэшированные цены. Обновления приостановлены."
+                    amountRange: "Введите сумму от"
                 },
                 loading: "Загрузка...",
                 timer: {
                     nextRound: "Следующий раунд через",
                     liveRound: "Раунд завершится через"
-                },
-                history: "История",
-                myBets: "Мои ставки",
-                apiStatus: {
-                    online: "Цены онлайн",
-                    offline: "Офлайн режим",
-                    loading: "Обновление..."
                 }
             }
         };
@@ -420,389 +306,43 @@
         const CONFIG = {
             MIN_BET: 1,
             MAX_BET: 1000,
-            ROUND_DURATION: 300, // 5 минут = 300 секунд
+            ROUND_DURATION: 300, // 5 минут для LIVE
             ENTRY_DURATION: 300, // 5 минут для ставок
             COMMISSION: 0.03, // 3%
-            INITIAL_ROUND_ID: 450100,
-            PRICE_UPDATE_INTERVAL: 5000, // 5 секунд
-            CACHE_DURATION: 60000, // 1 минута
-            API_TIMEOUT: 10000 // 10 секунд таймаут
+            INITIAL_ROUND_ID: 450100
         };
         
-        // Хук для получения реальных цен
-        function useCryptoPrices(updateInterval = CONFIG.PRICE_UPDATE_INTERVAL) {
-            const [prices, setPrices] = useState({
-                BTC: 89188.74,
-                ETH: 2950.49,
-                BNB: 886.87,
-                TON: 6.85
-            });
-            const [priceChanges, setPriceChanges] = useState({
-                BTC: 0,
-                ETH: 0,
-                BNB: 0,
-                TON: 0
-            });
-            const [loading, setLoading] = useState(true);
-            const [lastUpdated, setLastUpdated] = useState(null);
-            const [apiStatus, setApiStatus] = useState('loading'); // 'loading', 'online', 'offline'
-            const previousPricesRef = useRef({});
-            
-            // Функция для получения цен с CoinGecko (основной источник)
-            const fetchCoinGeckoPrices = useCallback(async () => {
-                try {
-                    const response = await fetch(
-                        'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,binancecoin,the-open-network&vs_currencies=usd&include_24h_change=true',
-                        { 
-                            signal: AbortSignal.timeout(CONFIG.API_TIMEOUT),
-                            headers: {
-                                'Accept': 'application/json'
-                            }
-                        }
-                    );
-                    
-                    if (!response.ok) throw new Error(`API error: ${response.status}`);
-                    
-                    const data = await response.json();
-                    
-                    return {
-                        BTC: data.bitcoin?.usd || null,
-                        ETH: data.ethereum?.usd || null,
-                        BNB: data.binancecoin?.usd || null,
-                        TON: data['the-open-network']?.usd || null,
-                        changes: {
-                            BTC: data.bitcoin?.usd_24h_change || 0,
-                            ETH: data.ethereum?.usd_24h_change || 0,
-                            BNB: data.binancecoin?.usd_24h_change || 0,
-                            TON: data['the-open-network']?.usd_24h_change || 0
-                        }
-                    };
-                } catch (error) {
-                    console.warn('CoinGecko API failed:', error);
-                    return null;
-                }
-            }, []);
-            
-            // Функция для получения цен с Binance (резервный источник)
-            const fetchBinancePrices = useCallback(async () => {
-                try {
-                    const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'TONUSDT'];
-                    const requests = symbols.map(symbol => 
-                        fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`)
-                            .then(res => res.json())
-                            .catch(() => null)
-                    );
-                    
-                    const responses = await Promise.allSettled(requests);
-                    
-                    const result = { changes: {} };
-                    
-                    responses.forEach((response, index) => {
-                        if (response.status === 'fulfilled' && response.value) {
-                            const symbol = symbols[index].replace('USDT', '');
-                            const data = response.value;
-                            
-                            result[symbol] = parseFloat(data.lastPrice);
-                            result.changes[symbol] = parseFloat(data.priceChangePercent);
-                        }
-                    });
-                    
-                    return Object.keys(result).length > 0 ? result : null;
-                } catch (error) {
-                    console.warn('Binance API failed:', error);
-                    return null;
-                }
-            }, []);
-            
-            // Функция для получения цен с Bybit (еще один резервный источник)
-            const fetchBybitPrices = useCallback(async () => {
-                try {
-                    const response = await fetch(
-                        'https://api.bybit.com/v5/market/tickers?category=spot&symbol=BTCUSDT,ETHUSDT,BNBUSDT,TONUSDT',
-                        { signal: AbortSignal.timeout(CONFIG.API_TIMEOUT) }
-                    );
-                    
-                    if (!response.ok) throw new Error(`API error: ${response.status}`);
-                    
-                    const data = await response.json();
-                    
-                    const result = { changes: {} };
-                    
-                    if (data.result && data.result.list) {
-                        data.result.list.forEach(item => {
-                            const symbol = item.symbol.replace('USDT', '');
-                            result[symbol] = parseFloat(item.lastPrice);
-                            result.changes[symbol] = parseFloat(item.price24hPcnt) * 100;
-                        });
-                    }
-                    
-                    return result;
-                } catch (error) {
-                    console.warn('Bybit API failed:', error);
-                    return null;
-                }
-            }, []);
-            
-            // Fallback: демо-данные (случайные изменения)
-            const generateDemoPrices = useCallback((currentPrices) => {
-                const newPrices = {};
-                const newChanges = {};
-                
-                ['BTC', 'ETH', 'BNB', 'TON'].forEach(symbol => {
-                    const change = (Math.random() - 0.5) * 0.005; // ±0.25%
-                    newPrices[symbol] = currentPrices[symbol] * (1 + change);
-                    newChanges[symbol] = change * 100;
-                });
-                
-                return { prices: newPrices, changes: newChanges };
-            }, []);
-            
-            // Основная функция обновления цен
-            const updatePrices = useCallback(async () => {
-                setLoading(true);
-                setApiStatus('loading');
-                
-                try {
-                    // Пробуем разные источники в порядке приоритета
-                    const sources = [
-                        fetchCoinGeckoPrices,
-                        fetchBinancePrices,
-                        fetchBybitPrices
-                    ];
-                    
-                    let newData = null;
-                    
-                    for (const source of sources) {
-                        try {
-                            newData = await source();
-                            if (newData && Object.keys(newData).length > 0) {
-                                setApiStatus('online');
-                                break;
-                            }
-                        } catch (error) {
-                            console.log(`Source ${source.name} failed, trying next...`);
-                        }
-                    }
-                    
-                    // Если все API недоступны, используем демо-данные
-                    if (!newData) {
-                        setApiStatus('offline');
-                        const demoData = generateDemoPrices(prices);
-                        newData = {
-                            ...demoData.prices,
-                            changes: demoData.changes
-                        };
-                    }
-                    
-                    // Вычисляем изменения цен
-                    const updatedPrices = {};
-                    const updatedChanges = {};
-                    
-                    ['BTC', 'ETH', 'BNB', 'TON'].forEach(symbol => {
-                        const newPrice = newData[symbol];
-                        const oldPrice = previousPricesRef.current[symbol] || prices[symbol];
-                        
-                        if (newPrice !== undefined && newPrice !== null) {
-                            updatedPrices[symbol] = newPrice;
-                            updatedChanges[symbol] = newData.changes?.[symbol] || 
-                                                   ((newPrice - oldPrice) / oldPrice * 100) || 0;
-                        } else {
-                            // Сохраняем старую цену, если новая недоступна
-                            updatedPrices[symbol] = prices[symbol];
-                            updatedChanges[symbol] = priceChanges[symbol];
-                        }
-                    });
-                    
-                    // Сохраняем текущие цены для следующего сравнения
-                    previousPricesRef.current = updatedPrices;
-                    
-                    // Обновляем состояние
-                    setPrices(updatedPrices);
-                    setPriceChanges(updatedChanges);
-                    setLastUpdated(new Date());
-                    
-                } catch (error) {
-                    console.error('Failed to update prices:', error);
-                    setApiStatus('offline');
-                } finally {
-                    setLoading(false);
-                }
-            }, [prices, priceChanges, fetchCoinGeckoPrices, fetchBinancePrices, fetchBybitPrices, generateDemoPrices]);
-            
-            // Инициализация и периодическое обновление
-            useEffect(() => {
-                // Загружаем кэшированные цены из localStorage
-                const cachedPrices = localStorage.getItem('crypto_prices_cache');
-                const cachedTimestamp = localStorage.getItem('crypto_prices_timestamp');
-                
-                if (cachedPrices && cachedTimestamp) {
-                    const age = Date.now() - parseInt(cachedTimestamp);
-                    
-                    if (age < CONFIG.CACHE_DURATION) {
-                        try {
-                            const parsed = JSON.parse(cachedPrices);
-                            setPrices(parsed.prices);
-                            setPriceChanges(parsed.changes);
-                            setLastUpdated(new Date(parsed.timestamp));
-                            previousPricesRef.current = parsed.prices;
-                        } catch (e) {
-                            console.warn('Failed to parse cached prices');
-                        }
-                    }
-                }
-                
-                // Первое обновление
-                updatePrices();
-                
-                // Устанавливаем интервал обновления
-                const interval = setInterval(updatePrices, updateInterval);
-                
-                return () => clearInterval(interval);
-            }, [updatePrices, updateInterval]);
-            
-            // Кэширование цен при обновлении
-            useEffect(() => {
-                if (lastUpdated) {
-                    const cacheData = {
-                        prices,
-                        changes: priceChanges,
-                        timestamp: lastUpdated.getTime()
-                    };
-                    localStorage.setItem('crypto_prices_cache', JSON.stringify(cacheData));
-                    localStorage.setItem('crypto_prices_timestamp', lastUpdated.getTime().toString());
-                }
-            }, [prices, priceChanges, lastUpdated]);
-            
-            return {
-                prices,
-                priceChanges,
-                loading,
-                lastUpdated,
-                apiStatus,
-                refresh: updatePrices
-            };
-        }
-        
-        // Компонент истории ставок
-        function BetsHistory({ userBets, t, selectedPair, onClose }) {
-            const filteredBets = userBets.filter(bet => bet.pair === selectedPair);
-            
-            return React.createElement('div', { className: "modal-overlay-telegram fixed inset-0 flex items-center justify-center z-50 p-4" },
-                React.createElement('div', { className: "telegram-card w-full max-w-sm max-h-[80vh] overflow-y-auto" },
-                    React.createElement('div', { className: "p-5 border-b border-white border-opacity-10" },
-                        React.createElement('div', { className: "flex justify-between items-center" },
-                            React.createElement('div', { className: "text-lg font-semibold text-white" }, t.history),
-                            React.createElement('button', { 
-                                onClick: onClose,
-                                className: "text-muted hover:text-white text-2xl"
-                            }, "×")
-                        ),
-                        React.createElement('div', { className: "mt-2 text-sm text-muted" }, `${t.myBets}: ${filteredBets.length}`)
-                    ),
-                    
-                    React.createElement('div', { className: "p-5" },
-                        filteredBets.length === 0 
-                            ? React.createElement('div', { className: "text-center py-8 text-muted" }, "No bets yet")
-                            : filteredBets.map(bet => 
-                                React.createElement('div', {
-                                    key: `${bet.roundId}-${bet.timestamp}`,
-                                    className: "flex justify-between items-center py-4 border-b border-white border-opacity-10"
-                                },
-                                    React.createElement('div', null,
-                                        React.createElement('div', { className: "font-medium text-white" }, `Round #${bet.roundId}`),
-                                        React.createElement('div', { className: `text-xs ${bet.side === 'up' ? 'text-price-up' : 'text-price-down'}` },
-                                            `${bet.side.toUpperCase()} • ${bet.amount} ${selectedPair}`
-                                        )
-                                    ),
-                                    React.createElement('div', { 
-                                        className: `text-sm font-medium ${bet.won ? 'text-price-up' : bet.finalResult ? 'text-price-down' : 'text-blue-400'}` 
-                                    },
-                                        bet.finalResult 
-                                            ? (bet.won 
-                                                ? React.createElement('span', null, "✅ ", bet.won ? `+${(bet.amount * (bet.side === 'up' ? 1.95 : 1.92)).toFixed(2)}` : '')
-                                                : React.createElement('span', null, "❌ Lost")
-                                              )
-                                            : React.createElement('span', null, "⏳ Live")
-                                    )
-                                )
-                            )
-                    ),
-                    
-                    React.createElement('div', { className: "p-5 border-t border-white border-opacity-10" },
-                        React.createElement('button', {
-                            onClick: onClose,
-                            className: "w-full py-3 bg-white bg-opacity-10 text-white rounded-xl font-bold hover:bg-opacity-20 transition-all"
-                        }, "Close")
-                    )
-                )
-            );
-        }
-        
-        // Компонент туториала
-        function TutorialCard({ onClose }) {
-            return React.createElement('div', { className: "tutorial-card fixed top-20 left-4 right-4 z-50 p-4 rounded-xl shadow-lg" },
-                React.createElement('div', { className: "flex justify-between items-start mb-3" },
-                    React.createElement('div', { className: "font-bold text-lg" }, "🎯 How to Play?"),
-                    React.createElement('button', {
-                        onClick: onClose,
-                        className: "text-white text-xl"
-                    }, "×")
-                ),
-                React.createElement('div', { className: "text-sm space-y-2" },
-                    React.createElement('div', null, "1. Choose crypto pair above"),
-                    React.createElement('div', null, "2. Place bets on NEXT rounds"),
-                    React.createElement('div', null, "3. Win if price moves in your direction!"),
-                    React.createElement('div', null, "4. Only one bet per round allowed")
-                ),
-                React.createElement('button', {
-                    onClick: onClose,
-                    className: "mt-4 w-full bg-white bg-opacity-20 text-white py-2 rounded-lg text-sm font-medium hover:bg-opacity-30 transition-all"
-                }, "Got it!")
-            );
-        }
-        
-        // Компонент таймера с улучшениями
+        // Компонент таймера
         function RoundTimer({ timeLeft, t, isLive }) {
-            const [isBlinking, setIsBlinking] = useState(false);
-            
-            useEffect(() => {
-                if (timeLeft <= 10 && timeLeft > 0) {
-                    const blink = setInterval(() => {
-                        setIsBlinking(prev => !prev);
-                    }, 500);
-                    return () => clearInterval(blink);
-                }
-                setIsBlinking(false);
-            }, [timeLeft]);
-            
             const formatTime = (seconds) => {
-                if (seconds < 0) return "00:00";
-                const mins = Math.floor(seconds / 60);
+                if (seconds < 0) return "00:00:00";
+                const hours = Math.floor(seconds / 3600);
+                const mins = Math.floor((seconds % 3600) / 60);
                 const secs = seconds % 60;
+                
+                if (hours > 0) {
+                    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                }
                 return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
             };
             
-            const timerStyle = timeLeft <= 30 
-                ? { background: 'linear-gradient(135deg, #ED4B9E 0%, #E93C8F 100%)' }
-                : {};
-            
-            return React.createElement('div', { 
-                className: `timer-container ${isBlinking ? 'animate-pulse' : ''}`,
-                style: timerStyle
-            },
-                React.createElement('div', { className: "flex justify-between items-center" },
+            return React.createElement('div', { className: "timer-container" },
+                React.createElement('div', { className: "flex justify-between items-center mb-4" },
                     React.createElement('div', null,
-                        React.createElement('div', { className: "text-white text-sm font-medium" },
+                        React.createElement('div', { className: "text-white text-lg font-bold" },
                             isLive ? t.timer.liveRound : t.timer.nextRound
+                        ),
+                        React.createElement('div', { className: "text-white text-opacity-70 text-sm" },
+                            isLive ? "Place your predictions now" : "Get ready for the next round"
                         )
                     ),
-                    React.createElement('div', { className: "flex items-center gap-1" },
+                    React.createElement('div', { className: "flex items-center gap-3" },
                         formatTime(timeLeft).split('').map((char, index) => 
                             char === ':' ? 
-                                React.createElement('div', { key: index, className: "text-white text-xl font-bold mx-1" }, ":") :
+                                React.createElement('div', { key: index, className: "text-white text-2xl font-bold mx-1" }, ":") :
                                 React.createElement('div', { 
                                     key: index,
-                                    className: "timer-digit text-white text-xl font-bold"
+                                    className: "timer-digit text-white text-2xl font-bold"
                                 }, char)
                         )
                     )
@@ -810,113 +350,372 @@
             );
         }
         
-        // Компонент для отображения пар с реальными ценами
-        function PairsHeader({ prices, priceChanges, selectedPair, onSelectPair, language, loading, lastUpdated }) {
+        // Компонент для отображения пар
+        function PairsHeader({ prices, selectedPair, onSelectPair, language }) {
             const pairs = [
                 { 
                     symbol: 'BTC', 
                     name: language === 'ru' ? 'Биткоин' : 'Bitcoin', 
                     price: prices.BTC || 89188.74,
-                    change: priceChanges.BTC || 0,
-                    icon: '₿'
+                    change: 2.34
                 },
                 { 
                     symbol: 'ETH', 
                     name: language === 'ru' ? 'Эфириум' : 'Ethereum', 
                     price: prices.ETH || 2950.49,
-                    change: priceChanges.ETH || 0,
-                    icon: 'Ξ'
+                    change: -1.27
                 },
                 { 
                     symbol: 'BNB', 
                     name: language === 'ru' ? 'Бинанс' : 'Binance', 
                     price: prices.BNB || 886.87,
-                    change: priceChanges.BNB || 0,
-                    icon: 'Ⓝ'
+                    change: 0.89
                 },
                 { 
                     symbol: 'TON', 
                     name: language === 'ru' ? 'Тон' : 'Toncoin', 
-                    price: prices.TON || 6.85,
-                    change: priceChanges.TON || 0,
-                    icon: 'Ⓣ'
+                    price: prices.TON || 7.5123,
+                    change: 3.45
                 }
             ];
             
-            // Форматирование времени последнего обновления
-            const formatTimeAgo = (date) => {
-                if (!date) return '';
-                const now = new Date();
-                const diff = Math.floor((now - date) / 1000);
-                
-                if (diff < 60) return `${diff}s ago`;
-                if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-                return `${Math.floor(diff / 3600)}h ago`;
-            };
-            
             return React.createElement('div', { className: "px-4 py-3" },
-                React.createElement('div', { className: "grid grid-cols-4 gap-2" },
+                React.createElement('div', { className: "flex overflow-x-auto gap-3 scroll-container pb-2" },
                     pairs.map(pair => 
                         React.createElement('button', {
                             key: pair.symbol,
-                            className: `pair-button-compact flex flex-col items-center justify-center transition-all relative ${selectedPair === pair.symbol ? 'selected' : ''} ${loading ? 'price-loading' : ''}`,
+                            className: `pair-button px-4 py-3 min-w-[140px] flex flex-col items-center justify-center transition-all ${selectedPair === pair.symbol ? 'selected' : ''}`,
                             onClick: () => onSelectPair(pair.symbol)
                         },
-                            // Индикатор обновления цены
-                            loading && selectedPair === pair.symbol && 
-                                React.createElement('div', { className: "price-update-indicator" }),
-                            
-                            React.createElement('div', { className: "flex items-center justify-center gap-1.5 mb-1" },
-                                React.createElement('div', { className: `crypto-icon ${pair.symbol.toLowerCase()}-icon` },
-                                    pair.icon
-                                ),
-                                React.createElement('div', { className: "text-sm font-medium" }, pair.symbol)
+                            React.createElement('div', { className: "flex items-center justify-between w-full mb-2" },
+                                React.createElement('div', { className: "text-lg font-bold" }, pair.symbol),
+                                React.createElement('div', { 
+                                    className: `text-sm font-bold ${pair.change >= 0 ? 'text-price-up' : 'text-price-down'}`
+                                },
+                                    pair.change >= 0 ? `+${pair.change}%` : `${pair.change}%`
+                                )
                             ),
-                            React.createElement('div', { className: "text-base font-bold text-white mb-0.5" },
-                                `$${pair.price.toLocaleString('en-US', { 
-                                    minimumFractionDigits: pair.price < 1 ? 4 : 2, 
-                                    maximumFractionDigits: pair.price < 1 ? 4 : 2 
-                                })}`
+                            React.createElement('div', { className: "text-2xl font-bold text-white mb-1" },
+                                `$${pair.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`
                             ),
-                            React.createElement('div', { 
-                                className: `text-xs font-medium ${pair.change >= 0 ? 'text-price-up' : 'text-price-down'}`
-                            },
-                                pair.change >= 0 ? `+${pair.change.toFixed(2)}%` : `${pair.change.toFixed(2)}%`
+                            React.createElement('div', { className: "text-sm text-muted" },
+                                pair.name
                             )
                         )
                     )
-                ),
-                // Время обновления
-                lastUpdated && React.createElement('div', { className: "text-xs text-center text-muted mt-2" },
-                    `${TRANSLATIONS[language].priceLabels.updated}: ${formatTimeAgo(lastUpdated)}`
                 )
             );
         }
         
-        // Компонент статуса API
-        function ApiStatus({ status, t, onRefresh }) {
-            const getStatusText = () => {
-                switch(status) {
-                    case 'online': return t.apiStatus.online;
-                    case 'offline': return t.apiStatus.offline;
-                    case 'loading': return t.apiStatus.loading;
-                    default: return '';
+        // Компонент карточки раунда
+        function PredictionCard({ round, onBet, balance, isSelected, onSelect, t, userBets, currentPair }) {
+            const [timeLeft, setTimeLeft] = useState(0);
+            const [progress, setProgress] = useState(0);
+            
+            // Проверка, есть ли уже ставка пользователя в этом раунде
+            const userBet = userBets?.find(bet => bet.roundId === round.id);
+            const hasUserBet = !!userBet;
+            
+            // Расчет времени и прогресса
+            useEffect(() => {
+                if (!round) return;
+                
+                const updateTime = () => {
+                    const now = Date.now();
+                    
+                    switch(round.status) {
+                        case 'live':
+                            const liveTimeLeft = Math.max(0, round.endTime - now);
+                            setTimeLeft(Math.floor(liveTimeLeft / 1000));
+                            setProgress(100 - (liveTimeLeft / (round.endTime - round.startTime)) * 100);
+                            break;
+                            
+                        case 'next':
+                            const nextTimeLeft = Math.max(0, round.entryEndTime - now);
+                            setTimeLeft(Math.floor(nextTimeLeft / 1000));
+                            setProgress(100 - (nextTimeLeft / CONFIG.ENTRY_DURATION) * 100);
+                            break;
+                            
+                        case 'later':
+                            setTimeLeft(Math.floor((round.startTime - now) / 1000));
+                            setProgress(0);
+                            break;
+                    }
+                };
+                
+                updateTime();
+                const interval = setInterval(updateTime, 1000);
+                return () => clearInterval(interval);
+            }, [round]);
+            
+            // Форматирование времени
+            const formatTime = (seconds) => {
+                if (seconds < 0) return "00:00";
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            };
+            
+            // Форматирование денег
+            const formatCurrency = (value) => {
+                if (value >= 1000) return `${(value/1000).toFixed(2)}K`;
+                return value.toFixed(4);
+            };
+            
+            if (!round) return null;
+            
+            // Коэффициенты выплат
+            const payoutUp = round.prizePoolUp > 0 
+                ? (round.prizePool / round.prizePoolUp * (1 - CONFIG.COMMISSION)).toFixed(2)
+                : '1.00';
+                
+            const payoutDown = round.prizePoolDown > 0 
+                ? (round.prizePool / round.prizePoolDown * (1 - CONFIG.COMMISSION)).toFixed(2)
+                : '1.00';
+            
+            // Рендер в зависимости от статуса
+            const renderContent = () => {
+                switch(round.status) {
+                    case 'prev':
+                        return renderPrevRound();
+                    case 'live':
+                        return renderLiveRound();
+                    case 'next':
+                        return renderNextRound();
+                    case 'later':
+                        return renderLaterRound();
+                    default:
+                        return null;
                 }
             };
             
-            const getStatusClass = () => {
-                switch(status) {
-                    case 'online': return 'api-status-online';
-                    case 'offline': return 'api-status-offline';
-                    case 'loading': return 'api-status-loading';
-                    default: return '';
-                }
+            // Завершенный раунд
+            const renderPrevRound = () => {
+                const priceChange = round.closedPrice - round.lockedPrice;
+                const isUp = priceChange >= 0;
+                
+                return React.createElement('div', { className: "p-5" },
+                    // Номер и статус
+                    React.createElement('div', { className: "flex justify-between items-center mb-5" },
+                        React.createElement('div', null,
+                            React.createElement('div', { className: "text-lg font-semibold text-white" }, `#${round.id}`),
+                            React.createElement('div', { className: "text-sm text-muted" }, `${currentPair}/USD`)
+                        ),
+                        React.createElement('div', { className: "prev-badge-telegram text-xs font-bold px-3 py-1.5 rounded-full" }, t.roundStatus.prev)
+                    ),
+                    
+                    // Цена и изменение
+                    React.createElement('div', { className: "mb-5" },
+                        React.createElement('div', { className: "text-2xl font-bold text-white mb-2" },
+                            `$${round.closedPrice.toFixed(4)}`
+                        ),
+                        React.createElement('div', { className: `text-base font-medium ${isUp ? 'text-price-up' : 'text-price-down'}` },
+                            `${isUp ? '↑' : '↓'} $${Math.abs(priceChange).toFixed(4)} (${isUp ? '+' : ''}${((priceChange/round.lockedPrice)*100).toFixed(2)}%)`
+                        )
+                    ),
+                    
+                    // Locked Price
+                    React.createElement('div', { className: "flex justify-between text-sm mb-3" },
+                        React.createElement('span', { className: "text-muted" }, t.priceLabels.lockedPrice),
+                        React.createElement('span', { className: "font-medium text-white" }, `$${round.lockedPrice.toFixed(4)}`)
+                    ),
+                    
+                    // Prize Pool
+                    React.createElement('div', { className: "flex justify-between text-sm mb-6" },
+                        React.createElement('span', { className: "text-muted" }, t.priceLabels.prizePool),
+                        React.createElement('span', { className: "font-medium text-white" }, `${formatCurrency(round.prizePool)} ${currentPair}`)
+                    ),
+                    
+                    // Результат
+                    React.createElement('div', { className: "flex gap-3" },
+                        React.createElement('div', { 
+                            className: `flex-1 text-center py-3 rounded-xl ${isUp ? 'up-button-telegram text-white' : 'bg-opacity-10 bg-white text-muted'}`
+                        },
+                            React.createElement('div', { className: "font-bold text-lg" }, t.betButtons.up),
+                            React.createElement('div', { className: "text-sm opacity-90" }, `${payoutUp}x ${t.betButtons.payout}`)
+                        ),
+                        React.createElement('div', { 
+                            className: `flex-1 text-center py-3 rounded-xl ${!isUp ? 'down-button-telegram text-white' : 'bg-opacity-10 bg-white text-muted'}`
+                        },
+                            React.createElement('div', { className: "font-bold text-lg" }, t.betButtons.down),
+                            React.createElement('div', { className: "text-sm opacity-90" }, `${payoutDown}x ${t.betButtons.payout}`)
+                        )
+                    )
+                );
             };
             
-            return React.createElement('div', { className: "api-status" },
-                React.createElement('div', { className: `api-status-dot ${getStatusClass()}` }),
-                React.createElement('div', { className: "text-xs text-white" }, getStatusText())
-            );
+            // LIVE раунд
+            const renderLiveRound = () => {
+                const currentPrice = round.currentPrice || round.lockedPrice;
+                const priceChange = currentPrice - round.lockedPrice;
+                const isUp = priceChange >= 0;
+                
+                return React.createElement('div', { className: "p-5" },
+                    // Прогресс бар и номер
+                    React.createElement('div', { className: "mb-5" },
+                        React.createElement('div', { className: "progress-bar-telegram mb-4" }, 
+                            React.createElement('div', { 
+                                className: "progress-fill", 
+                                style: { width: `${progress}%` } 
+                            })
+                        ),
+                        React.createElement('div', { className: "flex justify-between items-center" },
+                            React.createElement('div', null,
+                                React.createElement('div', { className: "text-lg font-semibold text-white" }, `#${round.id}`),
+                                React.createElement('div', { className: "text-sm text-muted" }, `${currentPair}/USD`)
+                            ),
+                            React.createElement('div', { className: "live-badge-telegram text-xs font-bold px-3 py-1.5 rounded-full" }, t.roundStatus.live)
+                        )
+                    ),
+                    
+                    // Цена и таймер
+                    React.createElement('div', { className: "mb-5" },
+                        React.createElement('div', { className: "flex justify-between items-center mb-3" },
+                            React.createElement('div', { className: "text-2xl font-bold text-white" },
+                                `$${currentPrice.toFixed(4)}`
+                            ),
+                            React.createElement('div', { className: "text-lg font-bold text-white bg-opacity-10 bg-white px-3 py-2 rounded-lg" },
+                                formatTime(timeLeft)
+                            )
+                        ),
+                        React.createElement('div', { className: `text-base font-medium ${isUp ? 'text-price-up' : 'text-price-down'}` },
+                            `${isUp ? '↑' : '↓'} $${Math.abs(priceChange).toFixed(4)}`
+                        )
+                    ),
+                    
+                    // Locked Price
+                    React.createElement('div', { className: "flex justify-between text-sm mb-3" },
+                        React.createElement('span', { className: "text-muted" }, t.priceLabels.lockedPrice),
+                        React.createElement('span', { className: "font-medium text-white" }, `$${round.lockedPrice.toFixed(4)}`)
+                    ),
+                    
+                    // Prize Pool
+                    React.createElement('div', { className: "flex justify-between text-sm mb-6" },
+                        React.createElement('span', { className: "text-muted" }, t.priceLabels.prizePool),
+                        React.createElement('span', { className: "font-medium text-white" }, `${formatCurrency(round.prizePool)} ${currentPair}`)
+                    ),
+                    
+                    // Коэффициенты
+                    React.createElement('div', { className: "flex gap-3" },
+                        React.createElement('div', { 
+                            className: `flex-1 text-center py-3 rounded-xl ${isUp ? 'up-button-telegram text-white' : 'bg-opacity-10 bg-white text-muted'}`
+                        },
+                            React.createElement('div', { className: "font-bold text-lg" }, t.betButtons.up),
+                            React.createElement('div', { className: "text-sm opacity-90" }, `${payoutUp}x ${t.betButtons.payout}`)
+                        ),
+                        React.createElement('div', { 
+                            className: `flex-1 text-center py-3 rounded-xl ${!isUp ? 'down-button-telegram text-white' : 'bg-opacity-10 bg-white text-muted'}`
+                        },
+                            React.createElement('div', { className: "font-bold text-lg" }, t.betButtons.down),
+                            React.createElement('div', { className: "text-sm opacity-90" }, `${payoutDown}x ${t.betButtons.payout}`)
+                        )
+                    )
+                );
+            };
+            
+            // NEXT раунд
+            const renderNextRound = () => {
+                const isBetDisabled = hasUserBet;
+                
+                return React.createElement('div', { className: "p-5" },
+                    // Номер и статус
+                    React.createElement('div', { className: "flex justify-between items-center mb-5" },
+                        React.createElement('div', null,
+                            React.createElement('div', { className: "text-lg font-semibold text-white" }, `#${round.id}`),
+                            React.createElement('div', { className: "text-sm text-muted" }, `${currentPair}/USD`)
+                        ),
+                        React.createElement('div', { className: "next-badge-telegram text-xs font-bold px-3 py-1.5 rounded-full" }, t.roundStatus.next)
+                    ),
+                    
+                    // Prize Pool
+                    React.createElement('div', { className: "mb-5" },
+                        React.createElement('div', { className: "text-sm text-muted mb-2" }, `${t.priceLabels.prizePool}:`),
+                        React.createElement('div', { className: "text-2xl font-bold text-white" },
+                            `${formatCurrency(round.prizePool)} ${currentPair}`
+                        )
+                    ),
+                    
+                    // Показывать мою ставку если есть
+                    hasUserBet && React.createElement('div', { className: "mb-4" },
+                        React.createElement('div', { className: "my-bet-badge-telegram text-xs font-bold px-4 py-3 rounded-xl text-center" },
+                            React.createElement('div', { className: "text-sm" }, t.betModal.myBet),
+                            React.createElement('div', { className: "font-bold text-xl mt-1 mb-2" }, `${userBet.amount} ${currentPair}`),
+                            React.createElement('div', { className: "text-sm opacity-90" }, 
+                                `${userBet.side === 'up' ? t.betButtons.up : t.betButtons.down} • ${userBet.side === 'up' ? payoutUp : payoutDown}x`
+                            )
+                        ),
+                        React.createElement('div', { className: "text-xs text-muted text-center mt-2" }, t.betModal.cantCancel)
+                    ),
+                    
+                    // Кнопки ставок
+                    React.createElement('div', { className: "flex gap-3 mb-4" },
+                        React.createElement('button', {
+                            className: `flex-1 up-button-telegram text-white py-4 rounded-xl font-bold transition-all ${isBetDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90 active:scale-95'}`,
+                            onClick: () => !isBetDisabled && onBet(round.id, 'up'),
+                            disabled: isBetDisabled
+                        },
+                            React.createElement('div', { className: "text-lg" }, t.betButtons.enterUp),
+                            React.createElement('div', { className: "text-sm opacity-90 mt-1" }, `${payoutUp}x ${t.betButtons.payout}`)
+                        ),
+                        React.createElement('button', {
+                            className: `flex-1 down-button-telegram text-white py-4 rounded-xl font-bold transition-all ${isBetDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90 active:scale-95'}`,
+                            onClick: () => !isBetDisabled && onBet(round.id, 'down'),
+                            disabled: isBetDisabled
+                        },
+                            React.createElement('div', { className: "text-lg" }, t.betButtons.enterDown),
+                            React.createElement('div', { className: "text-sm opacity-90 mt-1" }, `${payoutDown}x ${t.betButtons.payout}`)
+                        )
+                    ),
+                    
+                    // Время до закрытия
+                    React.createElement('div', { className: "text-center text-sm text-muted" },
+                        `${t.betButtons.poolCloses} ${formatTime(timeLeft)}`
+                    )
+                );
+            };
+            
+            // LATER раунд
+            const renderLaterRound = () => {
+                const startTime = new Date(round.startTime);
+                const hours = startTime.getHours().toString().padStart(2, '0');
+                const minutes = startTime.getMinutes().toString().padStart(2, '0');
+                
+                return React.createElement('div', { className: "p-5" },
+                    // Номер и статус
+                    React.createElement('div', { className: "flex justify-between items-center mb-5" },
+                        React.createElement('div', null,
+                            React.createElement('div', { className: "text-lg font-semibold text-white" }, `#${round.id}`),
+                            React.createElement('div', { className: "text-sm text-muted" }, `${currentPair}/USD`)
+                        ),
+                        React.createElement('div', { className: "later-badge-telegram text-xs font-bold px-3 py-1.5 rounded-full" }, t.roundStatus.later)
+                    ),
+                    
+                    // Время начала
+                    React.createElement('div', { className: "text-center py-8" },
+                        React.createElement('div', { className: "text-sm text-muted mb-2" }, t.betButtons.entryStarts),
+                        React.createElement('div', { className: "text-2xl font-bold text-white" },
+                            `~${hours}:${minutes}`
+                        )
+                    ),
+                    
+                    // Пустые кнопки
+                    React.createElement('div', { className: "flex gap-3 opacity-50" },
+                        React.createElement('div', { className: "flex-1 up-button-telegram text-white py-4 rounded-xl font-bold text-center" },
+                            React.createElement('div', null, t.betButtons.up),
+                            React.createElement('div', { className: "text-sm opacity-90 mt-1" }, `~x ${t.betButtons.payout}`)
+                        ),
+                        React.createElement('div', { className: "flex-1 down-button-telegram text-white py-4 rounded-xl font-bold text-center" },
+                            React.createElement('div', null, t.betButtons.down),
+                            React.createElement('div', { className: "text-sm opacity-90 mt-1" }, `~x ${t.betButtons.payout}`)
+                        )
+                    )
+                );
+            };
+            
+            return React.createElement('div', {
+                className: `telegram-card cursor-pointer transition-all duration-200 ${isSelected ? 'ring-2 ring-blue-500 ring-opacity-30' : ''}`,
+                onClick: onSelect
+            }, renderContent());
         }
         
         // Основное приложение
@@ -929,197 +728,145 @@
             const [loading, setLoading] = useState(true);
             const [userBets, setUserBets] = useState([]);
             const [language, setLanguage] = useState('en');
-            const [showTutorial, setShowTutorial] = useState(false);
-            const [showHistory, setShowHistory] = useState(false);
-            const audioContextRef = useRef(null);
-            
-            // Используем хук с реальными ценами
-            const { 
-                prices, 
-                priceChanges, 
-                loading: pricesLoading, 
-                lastUpdated, 
-                apiStatus, 
-                refresh: refreshPrices 
-            } = useCryptoPrices();
+            const [prices, setPrices] = useState({
+                BTC: 89188.74,
+                ETH: 2950.49,
+                BNB: 886.87,
+                TON: 7.5123
+            });
             
             // Текущий перевод
             const t = TRANSLATIONS[language];
             
-            // Инициализация аудио
-            useEffect(() => {
-                if (typeof window !== 'undefined' && window.AudioContext) {
-                    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-                }
-            }, []);
-            
-            // Звуковой эффект
-            const playSound = (type) => {
-                try {
-                    // Вибрация в Telegram
-                    if (window.Telegram?.WebApp?.HapticFeedback) {
-                        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                    }
-                    
-                    // Звуковой эффект
-                    if (audioContextRef.current && type === 'bet') {
-                        const oscillator = audioContextRef.current.createOscillator();
-                        const gainNode = audioContextRef.current.createGain();
-                        
-                        oscillator.connect(gainNode);
-                        gainNode.connect(audioContextRef.current.destination);
-                        
-                        oscillator.frequency.setValueAtTime(800, audioContextRef.current.currentTime);
-                        gainNode.gain.setValueAtTime(0.1, audioContextRef.current.currentTime);
-                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + 0.1);
-                        
-                        oscillator.start();
-                        oscillator.stop(audioContextRef.current.currentTime + 0.1);
-                    }
-                } catch (e) {
-                    console.log("Audio not available");
-                }
-            };
-            
-            // Загрузка из localStorage
-            useEffect(() => {
-                const savedBalance = localStorage.getItem('ton_prediction_balance');
-                const savedBets = localStorage.getItem('ton_prediction_bets');
-                const savedLanguage = localStorage.getItem('ton_prediction_language');
-                const tutorialSeen = localStorage.getItem('ton_prediction_tutorial_seen');
+            // Генерация тестовых данных для выбранной пары
+            const generateRounds = useCallback((pair) => {
+                const now = Date.now();
+                const basePrice = prices[pair];
+                const roundsData = [];
                 
-                if (savedBalance) setBalance(parseFloat(savedBalance));
-                if (savedBets) setUserBets(JSON.parse(savedBets));
-                if (savedLanguage) setLanguage(savedLanguage);
-                if (!tutorialSeen) setShowTutorial(true);
+                // PREV раунды (прошлые)
+                for (let i = 3; i > 0; i--) {
+                    const lockedPrice = basePrice * (0.995 + Math.random() * 0.01);
+                    const change = (Math.random() - 0.5) * 0.02;
+                    const closedPrice = lockedPrice + (lockedPrice * change);
+                    const isUp = change >= 0;
+                    
+                    roundsData.push({
+                        id: CONFIG.INITIAL_ROUND_ID - i,
+                        status: 'prev',
+                        lockedPrice: lockedPrice,
+                        closedPrice: closedPrice,
+                        prizePool: 0.5 + Math.random() * 2,
+                        prizePoolUp: isUp ? 0.3 + Math.random() * 1 : 0.1 + Math.random() * 0.5,
+                        prizePoolDown: !isUp ? 0.3 + Math.random() * 1 : 0.1 + Math.random() * 0.5,
+                        startTime: now - (i + 2) * CONFIG.ROUND_DURATION * 1000,
+                        endTime: now - (i + 1) * CONFIG.ROUND_DURATION * 1000
+                    });
+                }
+                
+                // LIVE раунд
+                const liveLockedPrice = basePrice * (0.998 + Math.random() * 0.004);
+                roundsData.push({
+                    id: CONFIG.INITIAL_ROUND_ID,
+                    status: 'live',
+                    lockedPrice: liveLockedPrice,
+                    currentPrice: liveLockedPrice * (0.999 + Math.random() * 0.002),
+                    prizePool: 0.8912,
+                    prizePoolUp: 0.3712,
+                    prizePoolDown: 0.52,
+                    startTime: now - 60000,
+                    endTime: now + CONFIG.ROUND_DURATION * 1000 - 60000
+                });
+                
+                // NEXT раунд
+                roundsData.push({
+                    id: CONFIG.INITIAL_ROUND_ID + 1,
+                    status: 'next',
+                    prizePool: 0.0223,
+                    prizePoolUp: 0.0093,
+                    prizePoolDown: 0.013,
+                    startTime: now + CONFIG.ROUND_DURATION * 1000,
+                    entryEndTime: now + CONFIG.ROUND_DURATION * 1000 + CONFIG.ENTRY_DURATION * 1000
+                });
+                
+                // LATER раунды
+                for (let i = 2; i <= 4; i++) {
+                    roundsData.push({
+                        id: CONFIG.INITIAL_ROUND_ID + i,
+                        status: 'later',
+                        prizePool: 0,
+                        prizePoolUp: 0,
+                        prizePoolDown: 0,
+                        startTime: now + i * CONFIG.ROUND_DURATION * 1000
+                    });
+                }
+                
+                return roundsData;
+            }, [prices]);
+            
+            // Обновление цен криптовалют
+            useEffect(() => {
+                const updatePrices = () => {
+                    setPrices(prev => ({
+                        BTC: prev.BTC * (1 + (Math.random() - 0.5) * 0.001),
+                        ETH: prev.ETH * (1 + (Math.random() - 0.5) * 0.002),
+                        BNB: prev.BNB * (1 + (Math.random() - 0.5) * 0.003),
+                        TON: prev.TON * (1 + (Math.random() - 0.5) * 0.005)
+                    }));
+                };
+                
+                updatePrices();
+                const priceInterval = setInterval(updatePrices, 3000);
+                return () => clearInterval(priceInterval);
             }, []);
             
-            // Сохранение в localStorage
+            // Инициализация
             useEffect(() => {
-                localStorage.setItem('ton_prediction_balance', balance);
-                localStorage.setItem('ton_prediction_bets', JSON.stringify(userBets));
-                localStorage.setItem('ton_prediction_language', language);
-            }, [balance, userBets, language]);
-            
-            // Инициализация Telegram Web App
-            useEffect(() => {
+                // Инициализация Telegram Web App
                 const tg = window.Telegram?.WebApp;
                 if (tg) {
-                    tg.ready();
                     tg.expand();
                     tg.setHeaderColor('#1c1c1e');
                     tg.setBackgroundColor('#1c1c1e');
-                    tg.enableClosingConfirmation();
                     
-                    // Получаем данные пользователя
-                    const user = tg.initDataUnsafe?.user;
-                    if (user) {
-                        console.log('Telegram user loaded:', user.id);
-                    }
-                    
-                    // Определение языка
+                    // Определение языка Telegram
                     const userLanguage = tg.initDataUnsafe?.user?.language_code || 'en';
                     if (userLanguage.startsWith('ru')) {
                         setLanguage('ru');
                     }
                 }
                 
-                // Генерация тестовых данных раундов
-                const generateRounds = () => {
-                    const now = Date.now();
-                    const basePrice = prices[selectedPair] || 6.85;
-                    const roundsData = [];
-                    
-                    // PREV раунды
-                    for (let i = 3; i > 0; i--) {
-                        const lockedPrice = basePrice * (0.995 + Math.random() * 0.01);
-                        const change = (Math.random() - 0.5) * 0.02;
-                        const closedPrice = lockedPrice + (lockedPrice * change);
-                        const isUp = change >= 0;
-                        const prizePoolUp = isUp ? 0.3 + Math.random() * 1 : 0.1 + Math.random() * 0.5;
-                        const prizePoolDown = !isUp ? 0.3 + Math.random() * 1 : 0.1 + Math.random() * 0.5;
-                        const prizePool = prizePoolUp + prizePoolDown;
-                        
-                        roundsData.push({
-                            id: CONFIG.INITIAL_ROUND_ID - i,
-                            status: 'prev',
-                            lockedPrice: lockedPrice,
-                            closedPrice: closedPrice,
-                            prizePool: prizePool,
-                            prizePoolUp: prizePoolUp,
-                            prizePoolDown: prizePoolDown,
-                            frozenPayoutUp: (prizePool / prizePoolUp * (1 - CONFIG.COMMISSION)).toFixed(2),
-                            frozenPayoutDown: (prizePool / prizePoolDown * (1 - CONFIG.COMMISSION)).toFixed(2),
-                            startTime: now - (i + 2) * CONFIG.ROUND_DURATION * 1000,
-                            endTime: now - (i + 1) * CONFIG.ROUND_DURATION * 1000
-                        });
-                    }
-                    
-                    // LIVE раунд
-                    const liveLockedPrice = basePrice * (0.998 + Math.random() * 0.004);
-                    roundsData.push({
-                        id: CONFIG.INITIAL_ROUND_ID,
-                        status: 'live',
-                        lockedPrice: liveLockedPrice,
-                        currentPrice: basePrice, // Используем реальную цену
-                        prizePool: 0.8912,
-                        prizePoolUp: 0.3712,
-                        prizePoolDown: 0.52,
-                        startTime: now - 60000,
-                        endTime: now + (CONFIG.ROUND_DURATION * 1000 - 60000)
-                    });
-                    
-                    // NEXT раунд
-                    roundsData.push({
-                        id: CONFIG.INITIAL_ROUND_ID + 1,
-                        status: 'next',
-                        prizePool: 0.0223,
-                        prizePoolUp: 0.0093,
-                        prizePoolDown: 0.013,
-                        startTime: now + CONFIG.ROUND_DURATION * 1000,
-                        entryEndTime: now + CONFIG.ROUND_DURATION * 1000 + CONFIG.ENTRY_DURATION * 1000
-                    });
-                    
-                    // LATER раунды
-                    for (let i = 2; i <= 4; i++) {
-                        roundsData.push({
-                            id: CONFIG.INITIAL_ROUND_ID + i,
-                            status: 'later',
-                            prizePool: 0,
-                            prizePoolUp: 0,
-                            prizePoolDown: 0,
-                            startTime: now + i * CONFIG.ROUND_DURATION * 1000
-                        });
-                    }
-                    
-                    return roundsData;
-                };
-                
+                // Загрузка данных
                 setTimeout(() => {
-                    setRounds(generateRounds());
+                    setRounds(generateRounds(selectedPair));
                     setSelectedRound(CONFIG.INITIAL_ROUND_ID + 1);
                     setLoading(false);
-                }, 800);
-            }, [selectedPair, prices]);
-            
-            // Обновление цен LIVE раундов в реальном времени
-            useEffect(() => {
-                const interval = setInterval(() => {
+                }, 500);
+                
+                // Обновление цен LIVE раундов
+                const livePriceInterval = setInterval(() => {
                     setRounds(prev => prev.map(round => {
                         if (round.status === 'live' && round.currentPrice) {
-                            // Используем реальную текущую цену для LIVE раунда
-                            const currentPrice = prices[selectedPair] || round.currentPrice;
+                            const change = (Math.random() - 0.5) * 0.001;
                             return {
                                 ...round,
-                                currentPrice: currentPrice
+                                currentPrice: round.currentPrice * (1 + change)
                             };
                         }
                         return round;
                     }));
                 }, 2000);
                 
-                return () => clearInterval(interval);
-            }, [selectedPair, prices]);
+                return () => clearInterval(livePriceInterval);
+            }, [generateRounds, selectedPair]);
+            
+            // Обновление раундов при смене пары
+            useEffect(() => {
+                if (!loading) {
+                    setRounds(generateRounds(selectedPair));
+                    setSelectedRound(CONFIG.INITIAL_ROUND_ID + 1);
+                }
+            }, [selectedPair, loading, generateRounds]);
             
             // Получение LIVE или NEXT раунда для таймера
             const getTimerRound = useMemo(() => {
@@ -1136,7 +883,7 @@
                 } else if (getTimerRound.nextRound) {
                     return Math.max(0, Math.floor((getTimerRound.nextRound.entryEndTime - now) / 1000));
                 }
-                return CONFIG.ROUND_DURATION;
+                return 0;
             }, [getTimerRound]);
             
             // Проверка, есть ли ставка в раунде
@@ -1146,14 +893,9 @@
             
             // Обработка ставки
             const handleBet = (roundId, side) => {
-                playSound('bet');
-                
+                // Проверка на уже сделанную ставку
                 if (hasBetInRound(roundId)) {
-                    if (window.Telegram?.WebApp) {
-                        window.Telegram.WebApp.showAlert(t.alerts.oneBetOnly);
-                    } else {
-                        alert(t.alerts.oneBetOnly);
-                    }
+                    alert(t.alerts.oneBetOnly);
                     return;
                 }
                 
@@ -1165,14 +907,7 @@
             
             // Подтверждение ставки
             const confirmBet = (roundId, amount, side) => {
-                // Защита от инъекций
-                const safeAmount = Math.max(CONFIG.MIN_BET, Math.min(CONFIG.MAX_BET, parseFloat(amount) || 0));
-                
-                if (safeAmount > balance) {
-                    alert(t.alerts.insufficientBalance);
-                    return;
-                }
-                
+                // Проверка на уже сделанную ставку
                 if (hasBetInRound(roundId)) {
                     alert(t.alerts.alreadyBet);
                     return;
@@ -1182,12 +917,12 @@
                 setRounds(prev => prev.map(round => {
                     if (round.id === roundId) {
                         const updatedRound = { ...round };
-                        updatedRound.prizePool += safeAmount;
+                        updatedRound.prizePool += amount;
                         
                         if (side === 'up') {
-                            updatedRound.prizePoolUp += safeAmount;
+                            updatedRound.prizePoolUp += amount;
                         } else {
-                            updatedRound.prizePoolDown += safeAmount;
+                            updatedRound.prizePoolDown += amount;
                         }
                         
                         return updatedRound;
@@ -1198,20 +933,18 @@
                 // Добавляем ставку в историю
                 const newBet = {
                     roundId,
-                    amount: safeAmount,
+                    amount,
                     side,
                     pair: selectedPair,
-                    timestamp: Date.now(),
-                    finalResult: null,
-                    won: false
+                    timestamp: Date.now()
                 };
                 setUserBets(prev => [...prev, newBet]);
                 
                 // Обновляем баланс
-                setBalance(prev => prev - safeAmount);
+                setBalance(prev => prev - amount);
                 
                 // Показываем уведомление
-                const alertMessage = `${t.alerts.betPlaced} ${safeAmount} ${selectedPair} on ${side.toUpperCase()}`;
+                const alertMessage = `${t.alerts.betPlaced} ${amount} ${selectedPair} on ${side.toUpperCase()}`;
                 if (window.Telegram?.WebApp) {
                     window.Telegram.WebApp.showAlert(alertMessage);
                 } else {
@@ -1220,45 +953,6 @@
                 
                 setBetModal({ open: false, round: null, side: null });
             };
-            
-            // Симуляция завершения раунда
-            useEffect(() => {
-                const checkRoundCompletion = () => {
-                    const now = Date.now();
-                    
-                    setRounds(prev => prev.map(round => {
-                        if (round.status === 'live' && round.endTime <= now) {
-                            const closedPrice = round.currentPrice || round.lockedPrice;
-                            const isUp = closedPrice >= round.lockedPrice;
-                            
-                            // Обновляем ставки пользователей
-                            setUserBets(prevBets => prevBets.map(bet => {
-                                if (bet.roundId === round.id) {
-                                    const won = (bet.side === 'up' && isUp) || (bet.side === 'down' && !isUp);
-                                    return {
-                                        ...bet,
-                                        finalResult: isUp ? 'up' : 'down',
-                                        won: won
-                                    };
-                                }
-                                return bet;
-                            }));
-                            
-                            return {
-                                ...round,
-                                status: 'prev',
-                                closedPrice: closedPrice,
-                                frozenPayoutUp: (round.prizePool / round.prizePoolUp * (1 - CONFIG.COMMISSION)).toFixed(2),
-                                frozenPayoutDown: (round.prizePool / round.prizePoolDown * (1 - CONFIG.COMMISSION)).toFixed(2)
-                            };
-                        }
-                        return round;
-                    }));
-                };
-                
-                const interval = setInterval(checkRoundCompletion, 1000);
-                return () => clearInterval(interval);
-            }, []);
             
             // Пополнение баланса
             const addBalance = () => {
@@ -1278,17 +972,12 @@
                 setLanguage(lang => lang === 'en' ? 'ru' : 'en');
             };
             
-            // Закрытие туториала
-            const closeTutorial = () => {
-                setShowTutorial(false);
-                localStorage.setItem('ton_prediction_tutorial_seen', 'true');
-            };
-            
             // Модальное окно ставки
             const BetModal = ({ round, side, onClose, onConfirm, balance, hasUserBet }) => {
                 const [amount, setAmount] = useState(CONFIG.MIN_BET.toString());
                 const [quickAmounts] = useState([1, 5, 10, 25, 50, 100]);
                 
+                // Расчет возможного выигрыша
                 const potentialWin = useMemo(() => {
                     const betAmount = parseFloat(amount) || 0;
                     if (betAmount <= 0) return 0;
@@ -1307,6 +996,7 @@
                 }, [amount, side, round]);
                 
                 const handleConfirm = () => {
+                    // Проверка на уже сделанную ставку
                     if (hasUserBet) {
                         alert(t.alerts.alreadyBet);
                         return;
@@ -1328,6 +1018,7 @@
                 
                 return React.createElement('div', { className: "modal-overlay-telegram fixed inset-0 flex items-center justify-center z-50 p-4" },
                     React.createElement('div', { className: "telegram-card w-full max-w-sm" },
+                        // Заголовок
                         React.createElement('div', { className: "p-5 border-b border-white border-opacity-10" },
                             React.createElement('div', { className: "flex justify-between items-center" },
                                 React.createElement('div', { className: "text-lg font-semibold text-white" }, `${t.betModal.title}${round.id}`),
@@ -1339,9 +1030,11 @@
                             React.createElement('div', { className: `mt-3 text-xl font-bold ${side === 'up' ? 'text-price-up' : 'text-price-down'}` },
                                 `${t.betModal.predict} ${side.toUpperCase()}`
                             ),
+                            // Предупреждение о невозможности отмены
                             React.createElement('div', { className: "mt-2 text-sm text-muted" }, t.betModal.cantCancel)
                         ),
                         
+                        // Сумма ставки
                         React.createElement('div', { className: "p-5" },
                             React.createElement('div', { className: "mb-6" },
                                 React.createElement('div', { className: "flex justify-between text-sm text-muted mb-3" },
@@ -1363,6 +1056,7 @@
                                 )
                             ),
                             
+                            // Быстрые суммы
                             React.createElement('div', { className: "grid grid-cols-3 gap-3 mb-8" },
                                 quickAmounts.map(quickAmount => 
                                     React.createElement('button', {
@@ -1373,6 +1067,7 @@
                                 )
                             ),
                             
+                            // Информация о выплате
                             React.createElement('div', { className: "bg-white bg-opacity-5 rounded-xl p-4 mb-8" },
                                 React.createElement('div', { className: "flex justify-between text-sm mb-3" },
                                     React.createElement('span', { className: "text-muted" }, t.betModal.potentialPayout),
@@ -1388,6 +1083,7 @@
                                 )
                             ),
                             
+                            // Кнопки
                             React.createElement('div', { className: "flex gap-4" },
                                 React.createElement('button', {
                                     onClick: handleConfirm,
@@ -1404,98 +1100,6 @@
                 );
             };
             
-            // Компонент карточки раунда
-            const PredictionCard = ({ round }) => {
-                const currentPrice = prices[selectedPair] || 6.85;
-                const priceChange = round.status === 'live' ? 
-                    (currentPrice - round.lockedPrice) : 
-                    (round.status === 'prev' ? (round.closedPrice - round.lockedPrice) : 0);
-                const isUp = priceChange >= 0;
-                
-                const formatCurrency = (value) => {
-                    if (value >= 1000) return `${(value/1000).toFixed(2)}K`;
-                    return value.toFixed(4);
-                };
-                
-                return React.createElement('div', { className: "telegram-card p-4 w-80 flex-shrink-0" },
-                    // Номер и статус
-                    React.createElement('div', { className: "flex justify-between items-center mb-4" },
-                        React.createElement('div', null,
-                            React.createElement('div', { className: "text-lg font-semibold text-white" }, `#${round.id}`),
-                            React.createElement('div', { className: "text-sm text-muted" }, `${selectedPair}/USD`)
-                        ),
-                        React.createElement('div', { 
-                            className: `text-xs font-bold px-3 py-1.5 rounded-full ${
-                                round.status === 'prev' ? 'prev-badge-telegram' :
-                                round.status === 'live' ? 'live-badge-telegram' :
-                                round.status === 'next' ? 'next-badge-telegram' : 'later-badge-telegram'
-                            }` 
-                        }, t.roundStatus[round.status])
-                    ),
-                    
-                    // Контент в зависимости от статуса
-                    round.status === 'prev' ? React.createElement('div', null,
-                        React.createElement('div', { className: "mb-4" },
-                            React.createElement('div', { className: "text-2xl font-bold text-white mb-2" },
-                                `$${round.closedPrice.toFixed(2)}`
-                            ),
-                            React.createElement('div', { className: `text-base font-medium ${isUp ? 'text-price-up' : 'text-price-down'}` },
-                                `${isUp ? '📈' : '📉'} ${isUp ? '+' : ''}${((priceChange/round.lockedPrice)*100).toFixed(2)}%`
-                            )
-                        ),
-                        React.createElement('div', { className: "flex justify-between text-sm mb-4" },
-                            React.createElement('span', { className: "text-muted" }, t.priceLabels.prizePool),
-                            React.createElement('span', { className: "font-medium text-white" }, `${formatCurrency(round.prizePool)} ${selectedPair}`)
-                        )
-                    ) : round.status === 'live' ? React.createElement('div', null,
-                        React.createElement('div', { className: "mb-4" },
-                            React.createElement('div', { className: "text-2xl font-bold text-white mb-2" },
-                                `$${currentPrice.toFixed(2)}`
-                            ),
-                            React.createElement('div', { className: `text-base font-medium ${isUp ? 'text-price-up' : 'text-price-down'}` },
-                                `${isUp ? '↑' : '↓'} $${Math.abs(priceChange).toFixed(2)}`
-                            )
-                        ),
-                        React.createElement('div', { className: "flex justify-between text-sm mb-6" },
-                            React.createElement('span', { className: "text-muted" }, t.priceLabels.prizePool),
-                            React.createElement('span', { className: "font-medium text-white" }, `${formatCurrency(round.prizePool)} ${selectedPair}`)
-                        )
-                    ) : round.status === 'next' ? React.createElement('div', null,
-                        React.createElement('div', { className: "mb-4" },
-                            React.createElement('div', { className: "text-sm text-muted mb-2" }, `${t.priceLabels.prizePool}:`),
-                            React.createElement('div', { className: "text-2xl font-bold text-white" },
-                                `${formatCurrency(round.prizePool)} ${selectedPair}`
-                            )
-                        ),
-                        
-                        // Кнопки ставок
-                        React.createElement('div', { className: "flex gap-3 mb-4" },
-                            React.createElement('button', {
-                                className: "flex-1 up-button-telegram text-white py-4 rounded-xl font-bold hover:opacity-90",
-                                onClick: () => handleBet(round.id, 'up')
-                            },
-                                React.createElement('div', { className: "text-lg" }, t.betButtons.enterUp),
-                                React.createElement('div', { className: "text-sm opacity-90 mt-1" }, `1.95x ${t.betButtons.payout}`)
-                            ),
-                            React.createElement('button', {
-                                className: "flex-1 down-button-telegram text-white py-4 rounded-xl font-bold hover:opacity-90",
-                                onClick: () => handleBet(round.id, 'down')
-                            },
-                                React.createElement('div', { className: "text-lg" }, t.betButtons.enterDown),
-                                React.createElement('div', { className: "text-sm opacity-90 mt-1" }, `1.92x ${t.betButtons.payout}`)
-                            )
-                        )
-                    ) : React.createElement('div', null,
-                        React.createElement('div', { className: "text-center py-8" },
-                            React.createElement('div', { className: "text-sm text-muted mb-2" }, t.betButtons.entryStarts),
-                            React.createElement('div', { className: "text-2xl font-bold text-white" },
-                                "~00:00"
-                            )
-                        )
-                    )
-                );
-            };
-            
             if (loading) {
                 return React.createElement('div', { className: "min-h-screen flex items-center justify-center" },
                     React.createElement('div', { className: "text-center" },
@@ -1506,10 +1110,7 @@
             }
             
             return React.createElement('div', { className: "min-h-screen pb-28 telegram-gradient-bg" },
-                // Туториал
-                showTutorial && React.createElement(TutorialCard, { onClose: closeTutorial }),
-                
-                // Шапка
+                // Шапка с балансом и языком
                 React.createElement('header', { className: "px-4 pt-6 pb-4" },
                     React.createElement('div', { className: "flex justify-between items-center" },
                         React.createElement('div', null,
@@ -1517,61 +1118,92 @@
                             React.createElement('p', { className: "text-sm text-muted mt-1" }, t.subtitle)
                         ),
                         React.createElement('div', { className: "text-right" },
-                            React.createElement('button', {
-                                onClick: toggleLanguage,
-                                className: "text-xs bg-white bg-opacity-10 hover:bg-opacity-20 text-white px-3 py-1 rounded-full flex items-center gap-1 transition-all mb-2 ml-auto"
-                            },
-                                language === 'en' ? '🇷🇺 RU' : '🇺🇸 EN'
-                            ),
-                            React.createElement('div', null,
-                                React.createElement('div', { className: "text-xl font-bold text-white" }, `${balance.toFixed(2)} TON`),
-                                React.createElement('div', { className: "text-xs text-muted" }, t.balance)
-                            )
+                            React.createElement('div', { className: "text-xl font-bold text-white" }, `${balance.toFixed(2)} TON`),
+                            React.createElement('div', { className: "text-xs text-muted" }, t.balance)
+                        )
+                    ),
+                    // Кнопка переключения языка
+                    React.createElement('div', { className: "mt-4 flex justify-end" },
+                        React.createElement('button', {
+                            onClick: toggleLanguage,
+                            className: "text-sm bg-white bg-opacity-10 hover:bg-opacity-20 text-white px-4 py-2 rounded-full flex items-center gap-2 transition-all"
+                        },
+                            language === 'en' ? '🇷🇺 Русский' : '🇺🇸 English'
                         )
                     )
                 ),
                 
-                // Кнопка истории
-                React.createElement('div', { className: "px-4" },
-                    React.createElement('button', {
-                        onClick: () => setShowHistory(true),
-                        className: "w-full px-4 py-3 bg-white bg-opacity-5 rounded-lg text-sm text-muted hover:text-white transition-all flex items-center justify-center gap-2"
-                    },
-                        React.createElement('span', null, "📊"),
-                        React.createElement('span', null, `${userBets.filter(bet => bet.pair === selectedPair).length} ${t.myBets}`)
-                    )
-                ),
-                
-                // Пары криптовалют с реальными ценами
+                // Пары криптовалют (кликабельные)
                 React.createElement(PairsHeader, { 
                     prices: prices, 
-                    priceChanges: priceChanges,
                     selectedPair: selectedPair,
                     onSelectPair: setSelectedPair,
-                    language: language,
-                    loading: pricesLoading,
-                    lastUpdated: lastUpdated
+                    language: language 
                 }),
                 
-                // Таймер
+                // Таймер между парами и раундами
                 React.createElement(RoundTimer, { 
                     timeLeft: timerTimeLeft, 
                     t: t,
                     isLive: !!getTimerRound.liveRound 
                 }),
                 
-                // Статус API
-                React.createElement(ApiStatus, {
-                    status: apiStatus,
-                    t: t,
-                    onRefresh: refreshPrices
-                }),
-                
-                // Раунды
+                // Контейнер с карточками раундов
                 React.createElement('main', { className: "px-4" },
                     React.createElement('div', { className: "scroll-container flex overflow-x-auto gap-4 pb-4 -mx-4 px-4" },
                         rounds.map(round => 
-                            React.createElement(PredictionCard, { key: round.id, round: round })
+                            React.createElement('div', { 
+                                key: round.id,
+                                className: "flex-shrink-0 w-80"
+                            },
+                                React.createElement(PredictionCard, {
+                                    round: round,
+                                    onBet: handleBet,
+                                    balance: balance,
+                                    isSelected: selectedRound === round.id,
+                                    onSelect: () => setSelectedRound(round.id),
+                                    t: t,
+                                    userBets: userBets,
+                                    currentPair: selectedPair
+                                })
+                            )
+                        )
+                    ),
+                    
+                    // Информация о выбранном раунде
+                    selectedRound && React.createElement('div', { className: "mt-6 text-center text-sm text-muted" },
+                        React.createElement('p', null, t.selectRound, selectedRound),
+                        React.createElement('p', { className: "text-xs mt-2" }, t.swipeHint)
+                    ),
+                    
+                    // Информация о ставках пользователя
+                    userBets.length > 0 && React.createElement('div', { className: "mt-6 telegram-card p-5" },
+                        React.createElement('h3', { className: "font-bold text-white text-lg mb-4 flex items-center gap-2" },
+                            React.createElement('span', null, "📊"),
+                            React.createElement('span', null, "Your Bets")
+                        ),
+                        React.createElement('div', { className: "space-y-3" },
+                            userBets.map((bet, index) => {
+                                const round = rounds.find(r => r.id === bet.roundId);
+                                return React.createElement('div', { 
+                                    key: index,
+                                    className: "flex justify-between items-center py-3 border-b border-white border-opacity-10 last:border-0"
+                                },
+                                    React.createElement('div', null,
+                                        React.createElement('div', { className: "font-medium text-white" }, `Round #${bet.roundId}`),
+                                        React.createElement('div', { className: `text-sm ${bet.side === 'up' ? 'text-price-up' : 'text-price-down'} flex items-center gap-1` },
+                                            React.createElement('span', null, bet.side === 'up' ? '📈' : '📉'),
+                                            React.createElement('span', null, bet.side === 'up' ? t.betButtons.up : t.betButtons.down)
+                                        )
+                                    ),
+                                    React.createElement('div', { className: "text-right" },
+                                        React.createElement('div', { className: "font-bold text-white text-lg" }, `${bet.amount} ${bet.pair}`),
+                                        round && React.createElement('div', { className: "text-xs text-muted" },
+                                            `${t.priceLabels.prizePool}: ${round.prizePool.toFixed(4)} ${bet.pair}`
+                                        )
+                                    )
+                                );
+                            })
                         )
                     )
                 ),
@@ -1584,14 +1216,6 @@
                     onClose: () => setBetModal({ open: false, round: null, side: null }),
                     onConfirm: confirmBet,
                     hasUserBet: hasBetInRound(betModal.round?.id)
-                }),
-                
-                // История ставок
-                showHistory && React.createElement(BetsHistory, {
-                    userBets: userBets,
-                    t: t,
-                    selectedPair: selectedPair,
-                    onClose: () => setShowHistory(false)
                 }),
                 
                 // Кнопка пополнения
@@ -1611,26 +1235,6 @@
         
         // Запуск приложения
         ReactDOM.render(React.createElement(App), document.getElementById('root'));
-    </script>
-    
-    <script>
-        // Регистрация Service Worker для оффлайн-работы
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(err => {
-                    console.log('ServiceWorker registration failed: ', err);
-                });
-            });
-        }
-        
-        // Добавляем поддержку AbortSignal.timeout для старых браузеров
-        if (typeof AbortSignal !== 'undefined' && !AbortSignal.timeout) {
-            AbortSignal.timeout = function(ms) {
-                const controller = new AbortController();
-                setTimeout(() => controller.abort(new DOMException('TimeoutError', 'TimeoutError')), ms);
-                return controller.signal;
-            };
-        }
     </script>
 </body>
 </html>
