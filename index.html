@@ -2,1239 +2,479 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TON Prediction</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tap Flight | Crypto Predictions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --tg-theme-bg-color: #1c1c1e;
-            --tg-theme-text-color: #ffffff;
-            --tg-theme-button-color: #3390ec;
-            --tg-theme-button-text-color: #ffffff;
-            --tg-theme-secondary-bg-color: #2c2c2e;
+            --primary: #6c5ce7;
+            --primary-dark: #4a3aff;
+            --success: #4cd964;
+            --danger: #ff5a5a;
+            --warning: #ff9a00;
+            --bg-main: #0a0a1a;
+            --bg-card: #1e1f33;
+            --bg-elevated: #2a2b40;
+            --text-main: #ffffff;
+            --text-secondary: #a0a0c0;
+            --border-color: #3a3b5a;
         }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: linear-gradient(135deg, var(--bg-main) 0%, #1a1b2e 100%); color: var(--text-main); min-height: 100vh; }
+        .app-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
-            background: var(--tg-theme-bg-color);
-            color: var(--tg-theme-text-color);
-            -webkit-tap-highlight-color: transparent;
-        }
+        /* Header / Wallet */
+        .app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .logo { display: flex; align-items: center; gap: 12px; }
+        .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
+        .logo-text { font-size: 24px; font-weight: 700; background: linear-gradient(90deg, var(--primary), var(--primary-dark)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .wallet-section { display: flex; align-items: center; gap: 15px; }
+        .wallet-btn { background: linear-gradient(90deg, var(--primary), var(--primary-dark)); border: none; border-radius: 12px; padding: 10px 20px; color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s; }
+        .wallet-btn:hover { transform: translateY(-2px); }
+        .network-switcher { background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 12px; padding: 8px 15px; font-size: 14px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; cursor: pointer; }
         
-        /* Стиль как в Telegram Wallet */
-        .telegram-card {
-            background: var(--tg-theme-secondary-bg-color);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.25);
-        }
+        /* Main Layout */
+        .prediction-layout { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
         
-        .telegram-gradient-bg {
-            background: linear-gradient(180deg, #1c1c1e 0%, #2c2c2e 100%);
-        }
+        /* Left: Cards Grid */
+        .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        @media (max-width: 1100px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) { .prediction-layout { grid-template-columns: 1fr; } .cards-grid { grid-template-columns: 1fr; } }
         
-        .telegram-button {
-            background: var(--tg-theme-button-color);
-            border-radius: 12px;
-            transition: all 0.2s ease;
-        }
+        /* Prediction Card - PancakeSwap Style */
+        .prediction-card { background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border-color); overflow: hidden; transition: all 0.3s; }
+        .card-header { padding: 18px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .card-status { font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
+        .status-expired { background: rgba(160, 160, 192, 0.2); color: var(--text-secondary); }
+        .status-live { background: rgba(76, 217, 100, 0.2); color: var(--success); animation: pulse 2s infinite; }
+        .status-next { background: rgba(255, 154, 0, 0.2); color: var(--warning); }
+        .status-later { background: rgba(108, 92, 231, 0.2); color: var(--primary); }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        .round-id { font-size: 20px; font-weight: 700; color: var(--text-main); }
         
-        .telegram-button:hover {
-            opacity: 0.9;
-            transform: scale(0.98);
-        }
+        .card-body { padding: 20px; }
+        .price-info { text-align: center; margin-bottom: 20px; }
+        .price-label { font-size: 14px; color: var(--text-secondary); margin-bottom: 5px; }
+        .price-value { font-size: 24px; font-weight: 700; margin-bottom: 5px; }
+        .price-change { font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .change-up { color: var(--success); }
+        .change-down { color: var(--danger); }
         
-        .telegram-button:active {
-            transform: scale(0.96);
-        }
+        .prediction-actions { display: flex; justify-content: space-between; gap: 15px; }
+        .action-up, .action-down { flex: 1; text-align: center; }
+        .direction-btn { width: 100%; padding: 14px; border: none; border-radius: 16px; font-size: 18px; font-weight: 700; color: white; cursor: pointer; margin-bottom: 10px; transition: all 0.2s; }
+        .direction-btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        .btn-up { background: linear-gradient(135deg, var(--success), #2ecc71); }
+        .btn-down { background: linear-gradient(135deg, var(--danger), #ff3838); }
+        .payout { font-size: 16px; color: var(--text-secondary); }
+        .payout-value { font-size: 24px; font-weight: 700; color: var(--text-main); margin-top: 5px; }
         
-        /* Цвета для кнопок UP/DOWN */
-        .up-button-telegram {
-            background: linear-gradient(180deg, #31D0AA 0%, #2BC48A 100%);
-            border: 1px solid rgba(49, 208, 170, 0.2);
-        }
+        .prize-pool { background: var(--bg-elevated); border-radius: 12px; padding: 15px; margin-top: 20px; text-align: center; border: 1px solid var(--border-color); }
+        .pool-label { font-size: 14px; color: var(--text-secondary); margin-bottom: 5px; }
+        .pool-value { font-size: 20px; font-weight: 700; color: #ffd700; }
         
-        .down-button-telegram {
-            background: linear-gradient(180deg, #ED4B9E 0%, #E93C8F 100%);
-            border: 1px solid rgba(237, 75, 158, 0.2);
-        }
+        /* Right: Bet Panel */
+        .bet-panel { background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border-color); padding: 25px; position: sticky; top: 20px; height: fit-content; }
+        .panel-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; text-align: center; }
+        .selected-round { background: var(--bg-elevated); border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: center; border: 1px solid var(--primary); }
+        .selected-direction { display: inline-block; padding: 8px 20px; border-radius: 20px; font-weight: 700; margin-top: 10px; }
+        .direction-selected-up { background: rgba(76, 217, 100, 0.2); color: var(--success); }
+        .direction-selected-down { background: rgba(255, 90, 90, 0.2); color: var(--danger); }
         
-        /* Бейджи статусов */
-        .live-badge-telegram {
-            background: linear-gradient(180deg, #ED4B9E 0%, #E93C8F 100%);
-            color: white;
-        }
+        .commit-section { margin-bottom: 25px; }
+        .commit-label { font-size: 14px; color: var(--text-secondary); margin-bottom: 10px; }
+        .commit-input-wrapper { background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
+        .commit-input { background: none; border: none; color: var(--text-main); font-size: 18px; width: 100%; outline: none; }
+        .token-symbol { color: var(--text-secondary); font-weight: 600; }
+        .commit-buttons { display: flex; gap: 10px; margin-top: 10px; }
+        .commit-btn { flex: 1; background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; color: var(--text-secondary); cursor: pointer; text-align: center; }
+        .commit-btn:hover { border-color: var(--primary); color: var(--primary); }
         
-        .next-badge-telegram {
-            background: linear-gradient(180deg, #31D0AA 0%, #2BC48A 100%);
-            color: white;
-        }
+        .bet-actions { display: flex; gap: 15px; }
+        .action-btn { flex: 1; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .enter-btn { background: linear-gradient(90deg, var(--primary), var(--primary-dark)); color: white; }
+        .enter-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4); }
+        .later-btn { background: var(--bg-elevated); border: 1px solid var(--border-color); color: var(--text-secondary); }
+        .later-btn:hover { border-color: var(--primary); color: var(--primary); }
         
-        .later-badge-telegram {
-            background: #5D5D5D;
-            color: white;
-        }
+        .warning-box { background: rgba(255, 154, 0, 0.1); border: 1px solid rgba(255, 154, 0, 0.3); border-radius: 12px; padding: 15px; margin-top: 25px; font-size: 13px; color: var(--warning); }
         
-        .prev-badge-telegram {
-            background: #4A4A4A;
-            color: white;
-        }
+        /* Tutorial Section */
+        .tutorial { background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border-color); padding: 25px; margin-top: 20px; }
+        .tutorial-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; }
+        .tutorial-content { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
         
-        .my-bet-badge-telegram {
-            background: linear-gradient(180deg, #3390ec 0%, #1c7cd6 100%);
-            color: white;
-        }
-        
-        /* Таймер */
-        .timer-container {
-            background: linear-gradient(135deg, #3390ec 0%, #1c7cd6 100%);
-            border-radius: 20px;
-            padding: 16px;
-            margin: 16px;
-            box-shadow: 0 8px 32px rgba(51, 144, 236, 0.3);
-        }
-        
-        .timer-digit {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 12px 16px;
-            font-variant-numeric: tabular-nums;
-        }
-        
-        /* Кнопки пар */
-        .pair-button {
-            background: var(--tg-theme-secondary-bg-color);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        
-        .pair-button:hover {
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateY(-2px);
-        }
-        
-        .pair-button.selected {
-            background: var(--tg-theme-button-color);
-            border-color: var(--tg-theme-button-color);
-        }
-        
-        /* Прогресс бар */
-        .progress-bar-telegram {
-            background: rgba(255, 255, 255, 0.1);
-            height: 6px;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #31D0AA 0%, #ED4B9E 100%);
-            transition: width 1s linear;
-        }
-        
-        /* Скролл */
-        .scroll-container {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        
-        .scroll-container::-webkit-scrollbar {
-            display: none;
-        }
-        
-        /* Модальное окно */
-        .modal-overlay-telegram {
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(20px);
-        }
-        
-        /* Адаптация под Telegram */
-        .tg-safe-area {
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-        
-        /* Плавающая кнопка */
-        .floating-bottom-telegram {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--tg-theme-secondary-bg-color);
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0px -4px 24px rgba(0, 0, 0, 0.5);
-            z-index: 100;
-        }
-        
-        /* Цвета текста */
-        .text-price-up {
-            color: #31D0AA;
-        }
-        
-        .text-price-down {
-            color: #ED4B9E;
-        }
-        
-        .text-muted {
-            color: #8E8E93;
-        }
+        /* Connection Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: var(--bg-card); border-radius: 20px; padding: 30px; width: 100%; max-width: 400px; border: 1px solid var(--border-color); }
     </style>
 </head>
-<body class="tg-safe-area">
-    <div id="root"></div>
-    
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <div class="logo-icon">TF</div>
+                <div class="logo-text">Tap Flight</div>
+            </div>
+            <div class="wallet-section">
+                <div class="network-switcher">
+                    <i class="fas fa-circle"></i> BNB Chain
+                </div>
+                <button class="wallet-btn" id="connectWalletBtn">
+                    <i class="fas fa-wallet"></i> Connect Wallet
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Prediction Layout -->
+        <div class="prediction-layout">
+            <!-- Left: Prediction Cards -->
+            <div class="cards-container">
+                <div class="cards-grid" id="predictionCardsGrid">
+                    <!-- Cards are generated by JavaScript here -->
+                </div>
+            </div>
+
+            <!-- Right: Bet Panel -->
+            <div class="bet-panel" id="betPanel">
+                <h2 class="panel-title">Set Position</h2>
+                <div class="selected-round" id="selectedRoundInfo">
+                    Select a round and direction to begin
+                </div>
+                
+                <div class="commit-section">
+                    <div class="commit-label">Commit:</div>
+                    <div class="commit-input-wrapper">
+                        <input type="number" class="commit-input" id="commitAmount" placeholder="0.0" min="0" step="0.001" value="0.1">
+                        <span class="token-symbol">BNB</span>
+                    </div>
+                    <div class="commit-buttons">
+                        <div class="commit-btn" data-multiplier="0.25">0.25 BNB</div>
+                        <div class="commit-btn" data-multiplier="0.5">0.5 BNB</div>
+                        <div class="commit-btn" data-multiplier="1">1 BNB</div>
+                        <div class="commit-btn" data-multiplier="2">2 BNB</div>
+                    </div>
+                </div>
+                
+                <div class="warning-box">
+                    <i class="fas fa-exclamation-triangle"></i> You won't be able to remove or change your position once you enter it.
+                </div>
+                
+                <div class="bet-actions">
+                    <button class="action-btn enter-btn" id="enterPositionBtn" disabled>
+                        <i class="fas fa-arrow-up"></i> Enter Position
+                    </button>
+                    <button class="action-btn later-btn" id="cancelBtn">
+                        Later
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tutorial Section -->
+        <div class="tutorial">
+            <h3 class="tutorial-title">Quick start to Prediction</h3>
+            <p class="tutorial-content">
+                <strong>Welcome!</strong> Once you enter a position, you cannot cancel or adjust it. Predict whether the price of BNB will go UP or DOWN compared to the "Locked Price" when the round expires. Your payout multiplier is shown on the card. Connect your wallet to start.
+            </p>
+        </div>
+    </div>
+
+    <!-- Modals would go here -->
     <script>
-        const { useState, useEffect, useCallback, useMemo } = React;
-        
-        // Локализация
-        const TRANSLATIONS = {
-            en: {
-                title: "TON Prediction",
-                subtitle: "Predict crypto price movements",
-                balance: "Balance",
-                selectRound: "Selected: Round #",
-                swipeHint: "Swipe left/right to view other rounds",
-                addBalance: "💎 Add 100 TON",
-                roundStatus: {
-                    prev: "PREV",
-                    live: "LIVE",
-                    next: "Next",
-                    later: "Later"
-                },
-                betButtons: {
-                    up: "UP",
-                    down: "DOWN",
-                    enterUp: "Enter UP",
-                    enterDown: "Enter DOWN",
-                    payout: "Payout",
-                    poolCloses: "Pool closes in",
-                    entryStarts: "Entry starts"
-                },
-                betModal: {
-                    title: "Round #",
-                    predict: "Predict",
-                    amount: "Amount",
-                    balance: "Balance",
-                    potentialPayout: "Potential Payout",
-                    confirm: "Confirm",
-                    cancel: "Cancel",
-                    myBet: "My Bet:",
-                    cantCancel: "Cannot cancel bet once placed"
-                },
-                priceLabels: {
-                    lockedPrice: "Locked Price",
-                    prizePool: "Prize Pool",
-                    lastPrice: "Last Price"
-                },
-                alerts: {
-                    betPlaced: "Bet placed!",
-                    balanceAdded: "Balance topped up by 100 TON!",
-                    oneBetOnly: "You can only place one bet per round!",
-                    alreadyBet: "You already placed a bet in this round",
-                    insufficientBalance: "Insufficient balance",
-                    amountRange: "Please enter amount between"
-                },
-                loading: "Loading prediction rounds...",
-                timer: {
-                    nextRound: "Next Round In",
-                    liveRound: "Round Ends In"
+        // ========== DATA & STATE ==========
+        let userWallet = null;
+        let userBalance = 5.0; // Simulated balance in BNB
+        let selectedCard = null;
+        let selectedDirection = null; // 'up' or 'down'
+        let currentRoundId = 450306; // Starting live round ID
+
+        // Prediction Rounds Data (matching PancakeSwap structure)
+        const predictionRounds = [
+            { id: 450303, status: 'Expired', lockedPrice: 879.7063, closedPrice: 879.1810, change: -0.5253, prizePool: 2.2357, payoutUp: 2.31, payoutDown: 1.76 },
+            { id: 450304, status: 'Expired', lockedPrice: 879.1810, closedPrice: 879.2572, change: 0.0762, prizePool: 4.1769, payoutUp: 2.08, payoutDown: 1.92 },
+            { id: 450305, status: 'Expired', lockedPrice: 879.2572, closedPrice: 879.2199, change: -0.0373, prizePool: 2.1336, payoutUp: 3.24, payoutDown: 1.45 },
+            { id: 450306, status: 'Live', lockedPrice: 879.2199, lastPrice: 870.3205, change: -0.0382, prizePool: 3.0293, payoutUp: 2.06, payoutDown: 1.94 },
+            { id: 450307, status: 'Next', prizePool: 0.0001, payoutUp: 0.00, payoutDown: 0.00 },
+            { id: 450308, status: 'Later', entryStarts: '02:41' },
+            { id: 450309, status: 'Later', entryStarts: '07:41' }
+        ];
+
+        // ========== INITIALIZATION ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            renderPredictionCards();
+            setupEventListeners();
+            simulateLivePriceMovement();
+        });
+
+        // ========== RENDER FUNCTIONS ==========
+        function renderPredictionCards() {
+            const grid = document.getElementById('predictionCardsGrid');
+            grid.innerHTML = '';
+            
+            predictionRounds.forEach(round => {
+                const card = document.createElement('div');
+                card.className = 'prediction-card';
+                card.dataset.roundId = round.id;
+                
+                let priceInfo = '';
+                let priceChangeClass = round.change >= 0 ? 'change-up' : 'change-down';
+                let changeSymbol = round.change >= 0 ? '+' : '';
+                
+                if (round.status === 'Expired') {
+                    priceInfo = `
+                        <div class="price-info">
+                            <div class="price-label">Closed Price</div>
+                            <div class="price-value">$${round.closedPrice.toFixed(4)}</div>
+                            <div class="price-change ${priceChangeClass}">
+                                <i class="fas fa-arrow-${round.change >= 0 ? 'up' : 'down'}"></i> ${changeSymbol}${round.change.toFixed(4)}
+                            </div>
+                        </div>
+                        <div class="price-label">Locked Price:</div>
+                        <div class="price-value">$${round.lockedPrice.toFixed(4)}</div>
+                    `;
+                } else if (round.status === 'Live') {
+                    priceInfo = `
+                        <div class="price-info">
+                            <div class="price-label">Last Price</div>
+                            <div class="price-value" id="livePrice-${round.id}">$${round.lastPrice.toFixed(4)}</div>
+                            <div class="price-change ${priceChangeClass}">
+                                <i class="fas fa-arrow-${round.change >= 0 ? 'up' : 'down'}"></i> ${changeSymbol}${round.change.toFixed(4)}
+                            </div>
+                        </div>
+                        <div class="price-label">Locked Price:</div>
+                        <div class="price-value">$${round.lockedPrice.toFixed(4)}</div>
+                    `;
+                } else if (round.status === 'Next') {
+                    priceInfo = `
+                        <div class="price-info">
+                            <div class="price-label">Locked Price will be set</div>
+                            <div class="price-value">-</div>
+                        </div>
+                    `;
+                } else if (round.status === 'Later') {
+                    priceInfo = `
+                        <div class="price-info">
+                            <div class="price-label">Entry starts</div>
+                            <div class="price-value">~${round.entryStarts}</div>
+                        </div>
+                    `;
                 }
-            },
-            ru: {
-                title: "Предсказания TON",
-                subtitle: "Прогнозируйте движение цен",
-                balance: "Баланс",
-                selectRound: "Выбрано: Раунд #",
-                swipeHint: "Свайпайте влево/вправо",
-                addBalance: "💎 Пополнить 100 TON",
-                roundStatus: {
-                    prev: "ПРОШЛЫЙ",
-                    live: "В ЭФИРЕ",
-                    next: "Следующий",
-                    later: "Позже"
-                },
-                betButtons: {
-                    up: "ВВЕРХ",
-                    down: "ВНИЗ",
-                    enterUp: "Ставка ВВЕРХ",
-                    enterDown: "Ставка ВНИЗ",
-                    payout: "Выплата",
-                    poolCloses: "Ставки закроются через",
-                    entryStarts: "Начало приёма"
-                },
-                betModal: {
-                    title: "Раунд #",
-                    predict: "Прогноз",
-                    amount: "Сумма",
-                    balance: "Баланс",
-                    potentialPayout: "Возможный выигрыш",
-                    confirm: "Подтвердить",
-                    cancel: "Отмена",
-                    myBet: "Моя ставка:",
-                    cantCancel: "Ставку нельзя отменить"
-                },
-                priceLabels: {
-                    lockedPrice: "Фиксированная цена",
-                    prizePool: "Призовой фонд",
-                    lastPrice: "Текущая цена"
-                },
-                alerts: {
-                    betPlaced: "Ставка размещена!",
-                    balanceAdded: "Баланс пополнен!",
-                    oneBetOnly: "Только одна ставка на раунд!",
-                    alreadyBet: "Вы уже сделали ставку",
-                    insufficientBalance: "Недостаточно средств",
-                    amountRange: "Введите сумму от"
-                },
-                loading: "Загрузка...",
-                timer: {
-                    nextRound: "Следующий раунд через",
-                    liveRound: "Раунд завершится через"
+                
+                let actionButtons = '';
+                if (round.status === 'Live' || round.status === 'Next') {
+                    actionButtons = `
+                        <div class="prediction-actions">
+                            <div class="action-up">
+                                <button class="direction-btn btn-up" data-direction="up" data-round="${round.id}">Up</button>
+                                <div class="payout">Payout</div>
+                                <div class="payout-value">${round.payoutUp.toFixed(2)}x</div>
+                            </div>
+                            <div class="action-down">
+                                <button class="direction-btn btn-down" data-direction="down" data-round="${round.id}">Down</button>
+                                <div class="payout">Payout</div>
+                                <div class="payout-value">${round.payoutDown.toFixed(2)}x</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    actionButtons = `
+                        <div class="prediction-actions">
+                            <div class="action-up">
+                                <div style="padding: 14px; opacity: 0.5; border-radius: 16px; background: #2a2b40; margin-bottom: 10px;">Up</div>
+                                <div class="payout">Payout</div>
+                                <div class="payout-value">${round.payoutUp ? round.payoutUp.toFixed(2) + 'x' : '-'}</div>
+                            </div>
+                            <div class="action-down">
+                                <div style="padding: 14px; opacity: 0.5; border-radius: 16px; background: #2a2b40; margin-bottom: 10px;">Down</div>
+                                <div class="payout">Payout</div>
+                                <div class="payout-value">${round.payoutDown ? round.payoutDown.toFixed(2) + 'x' : '-'}</div>
+                            </div>
+                        </div>
+                    `;
                 }
-            }
-        };
-        
-        // Конфигурация
-        const CONFIG = {
-            MIN_BET: 1,
-            MAX_BET: 1000,
-            ROUND_DURATION: 300, // 5 минут для LIVE
-            ENTRY_DURATION: 300, // 5 минут для ставок
-            COMMISSION: 0.03, // 3%
-            INITIAL_ROUND_ID: 450100
-        };
-        
-        // Компонент таймера
-        function RoundTimer({ timeLeft, t, isLive }) {
-            const formatTime = (seconds) => {
-                if (seconds < 0) return "00:00:00";
-                const hours = Math.floor(seconds / 3600);
-                const mins = Math.floor((seconds % 3600) / 60);
-                const secs = seconds % 60;
                 
-                if (hours > 0) {
-                    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                }
-                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            };
-            
-            return React.createElement('div', { className: "timer-container" },
-                React.createElement('div', { className: "flex justify-between items-center mb-4" },
-                    React.createElement('div', null,
-                        React.createElement('div', { className: "text-white text-lg font-bold" },
-                            isLive ? t.timer.liveRound : t.timer.nextRound
-                        ),
-                        React.createElement('div', { className: "text-white text-opacity-70 text-sm" },
-                            isLive ? "Place your predictions now" : "Get ready for the next round"
-                        )
-                    ),
-                    React.createElement('div', { className: "flex items-center gap-3" },
-                        formatTime(timeLeft).split('').map((char, index) => 
-                            char === ':' ? 
-                                React.createElement('div', { key: index, className: "text-white text-2xl font-bold mx-1" }, ":") :
-                                React.createElement('div', { 
-                                    key: index,
-                                    className: "timer-digit text-white text-2xl font-bold"
-                                }, char)
-                        )
-                    )
-                )
-            );
-        }
-        
-        // Компонент для отображения пар
-        function PairsHeader({ prices, selectedPair, onSelectPair, language }) {
-            const pairs = [
-                { 
-                    symbol: 'BTC', 
-                    name: language === 'ru' ? 'Биткоин' : 'Bitcoin', 
-                    price: prices.BTC || 89188.74,
-                    change: 2.34
-                },
-                { 
-                    symbol: 'ETH', 
-                    name: language === 'ru' ? 'Эфириум' : 'Ethereum', 
-                    price: prices.ETH || 2950.49,
-                    change: -1.27
-                },
-                { 
-                    symbol: 'BNB', 
-                    name: language === 'ru' ? 'Бинанс' : 'Binance', 
-                    price: prices.BNB || 886.87,
-                    change: 0.89
-                },
-                { 
-                    symbol: 'TON', 
-                    name: language === 'ru' ? 'Тон' : 'Toncoin', 
-                    price: prices.TON || 7.5123,
-                    change: 3.45
-                }
-            ];
-            
-            return React.createElement('div', { className: "px-4 py-3" },
-                React.createElement('div', { className: "flex overflow-x-auto gap-3 scroll-container pb-2" },
-                    pairs.map(pair => 
-                        React.createElement('button', {
-                            key: pair.symbol,
-                            className: `pair-button px-4 py-3 min-w-[140px] flex flex-col items-center justify-center transition-all ${selectedPair === pair.symbol ? 'selected' : ''}`,
-                            onClick: () => onSelectPair(pair.symbol)
-                        },
-                            React.createElement('div', { className: "flex items-center justify-between w-full mb-2" },
-                                React.createElement('div', { className: "text-lg font-bold" }, pair.symbol),
-                                React.createElement('div', { 
-                                    className: `text-sm font-bold ${pair.change >= 0 ? 'text-price-up' : 'text-price-down'}`
-                                },
-                                    pair.change >= 0 ? `+${pair.change}%` : `${pair.change}%`
-                                )
-                            ),
-                            React.createElement('div', { className: "text-2xl font-bold text-white mb-1" },
-                                `$${pair.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`
-                            ),
-                            React.createElement('div', { className: "text-sm text-muted" },
-                                pair.name
-                            )
-                        )
-                    )
-                )
-            );
-        }
-        
-        // Компонент карточки раунда
-        function PredictionCard({ round, onBet, balance, isSelected, onSelect, t, userBets, currentPair }) {
-            const [timeLeft, setTimeLeft] = useState(0);
-            const [progress, setProgress] = useState(0);
-            
-            // Проверка, есть ли уже ставка пользователя в этом раунде
-            const userBet = userBets?.find(bet => bet.roundId === round.id);
-            const hasUserBet = !!userBet;
-            
-            // Расчет времени и прогресса
-            useEffect(() => {
-                if (!round) return;
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-status status-${round.status.toLowerCase()}">${round.status}</div>
+                        <div class="round-id">#${round.id}</div>
+                    </div>
+                    <div class="card-body">
+                        ${priceInfo}
+                        ${actionButtons}
+                        <div class="prize-pool">
+                            <div class="pool-label">Prize Pool:</div>
+                            <div class="pool-value">${round.prizePool ? round.prizePool.toFixed(4) + ' BNB' : '<0.0001 BNB'}</div>
+                        </div>
+                    </div>
+                `;
                 
-                const updateTime = () => {
-                    const now = Date.now();
-                    
-                    switch(round.status) {
-                        case 'live':
-                            const liveTimeLeft = Math.max(0, round.endTime - now);
-                            setTimeLeft(Math.floor(liveTimeLeft / 1000));
-                            setProgress(100 - (liveTimeLeft / (round.endTime - round.startTime)) * 100);
-                            break;
-                            
-                        case 'next':
-                            const nextTimeLeft = Math.max(0, round.entryEndTime - now);
-                            setTimeLeft(Math.floor(nextTimeLeft / 1000));
-                            setProgress(100 - (nextTimeLeft / CONFIG.ENTRY_DURATION) * 100);
-                            break;
-                            
-                        case 'later':
-                            setTimeLeft(Math.floor((round.startTime - now) / 1000));
-                            setProgress(0);
-                            break;
-                    }
-                };
-                
-                updateTime();
-                const interval = setInterval(updateTime, 1000);
-                return () => clearInterval(interval);
-            }, [round]);
-            
-            // Форматирование времени
-            const formatTime = (seconds) => {
-                if (seconds < 0) return "00:00";
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            };
-            
-            // Форматирование денег
-            const formatCurrency = (value) => {
-                if (value >= 1000) return `${(value/1000).toFixed(2)}K`;
-                return value.toFixed(4);
-            };
-            
-            if (!round) return null;
-            
-            // Коэффициенты выплат
-            const payoutUp = round.prizePoolUp > 0 
-                ? (round.prizePool / round.prizePoolUp * (1 - CONFIG.COMMISSION)).toFixed(2)
-                : '1.00';
-                
-            const payoutDown = round.prizePoolDown > 0 
-                ? (round.prizePool / round.prizePoolDown * (1 - CONFIG.COMMISSION)).toFixed(2)
-                : '1.00';
-            
-            // Рендер в зависимости от статуса
-            const renderContent = () => {
-                switch(round.status) {
-                    case 'prev':
-                        return renderPrevRound();
-                    case 'live':
-                        return renderLiveRound();
-                    case 'next':
-                        return renderNextRound();
-                    case 'later':
-                        return renderLaterRound();
-                    default:
-                        return null;
-                }
-            };
-            
-            // Завершенный раунд
-            const renderPrevRound = () => {
-                const priceChange = round.closedPrice - round.lockedPrice;
-                const isUp = priceChange >= 0;
-                
-                return React.createElement('div', { className: "p-5" },
-                    // Номер и статус
-                    React.createElement('div', { className: "flex justify-between items-center mb-5" },
-                        React.createElement('div', null,
-                            React.createElement('div', { className: "text-lg font-semibold text-white" }, `#${round.id}`),
-                            React.createElement('div', { className: "text-sm text-muted" }, `${currentPair}/USD`)
-                        ),
-                        React.createElement('div', { className: "prev-badge-telegram text-xs font-bold px-3 py-1.5 rounded-full" }, t.roundStatus.prev)
-                    ),
-                    
-                    // Цена и изменение
-                    React.createElement('div', { className: "mb-5" },
-                        React.createElement('div', { className: "text-2xl font-bold text-white mb-2" },
-                            `$${round.closedPrice.toFixed(4)}`
-                        ),
-                        React.createElement('div', { className: `text-base font-medium ${isUp ? 'text-price-up' : 'text-price-down'}` },
-                            `${isUp ? '↑' : '↓'} $${Math.abs(priceChange).toFixed(4)} (${isUp ? '+' : ''}${((priceChange/round.lockedPrice)*100).toFixed(2)}%)`
-                        )
-                    ),
-                    
-                    // Locked Price
-                    React.createElement('div', { className: "flex justify-between text-sm mb-3" },
-                        React.createElement('span', { className: "text-muted" }, t.priceLabels.lockedPrice),
-                        React.createElement('span', { className: "font-medium text-white" }, `$${round.lockedPrice.toFixed(4)}`)
-                    ),
-                    
-                    // Prize Pool
-                    React.createElement('div', { className: "flex justify-between text-sm mb-6" },
-                        React.createElement('span', { className: "text-muted" }, t.priceLabels.prizePool),
-                        React.createElement('span', { className: "font-medium text-white" }, `${formatCurrency(round.prizePool)} ${currentPair}`)
-                    ),
-                    
-                    // Результат
-                    React.createElement('div', { className: "flex gap-3" },
-                        React.createElement('div', { 
-                            className: `flex-1 text-center py-3 rounded-xl ${isUp ? 'up-button-telegram text-white' : 'bg-opacity-10 bg-white text-muted'}`
-                        },
-                            React.createElement('div', { className: "font-bold text-lg" }, t.betButtons.up),
-                            React.createElement('div', { className: "text-sm opacity-90" }, `${payoutUp}x ${t.betButtons.payout}`)
-                        ),
-                        React.createElement('div', { 
-                            className: `flex-1 text-center py-3 rounded-xl ${!isUp ? 'down-button-telegram text-white' : 'bg-opacity-10 bg-white text-muted'}`
-                        },
-                            React.createElement('div', { className: "font-bold text-lg" }, t.betButtons.down),
-                            React.createElement('div', { className: "text-sm opacity-90" }, `${payoutDown}x ${t.betButtons.payout}`)
-                        )
-                    )
-                );
-            };
-            
-            // LIVE раунд
-            const renderLiveRound = () => {
-                const currentPrice = round.currentPrice || round.lockedPrice;
-                const priceChange = currentPrice - round.lockedPrice;
-                const isUp = priceChange >= 0;
-                
-                return React.createElement('div', { className: "p-5" },
-                    // Прогресс бар и номер
-                    React.createElement('div', { className: "mb-5" },
-                        React.createElement('div', { className: "progress-bar-telegram mb-4" }, 
-                            React.createElement('div', { 
-                                className: "progress-fill", 
-                                style: { width: `${progress}%` } 
-                            })
-                        ),
-                        React.createElement('div', { className: "flex justify-between items-center" },
-                            React.createElement('div', null,
-                                React.createElement('div', { className: "text-lg font-semibold text-white" }, `#${round.id}`),
-                                React.createElement('div', { className: "text-sm text-muted" }, `${currentPair}/USD`)
-                            ),
-                            React.createElement('div', { className: "live-badge-telegram text-xs font-bold px-3 py-1.5 rounded-full" }, t.roundStatus.live)
-                        )
-                    ),
-                    
-                    // Цена и таймер
-                    React.createElement('div', { className: "mb-5" },
-                        React.createElement('div', { className: "flex justify-between items-center mb-3" },
-                            React.createElement('div', { className: "text-2xl font-bold text-white" },
-                                `$${currentPrice.toFixed(4)}`
-                            ),
-                            React.createElement('div', { className: "text-lg font-bold text-white bg-opacity-10 bg-white px-3 py-2 rounded-lg" },
-                                formatTime(timeLeft)
-                            )
-                        ),
-                        React.createElement('div', { className: `text-base font-medium ${isUp ? 'text-price-up' : 'text-price-down'}` },
-                            `${isUp ? '↑' : '↓'} $${Math.abs(priceChange).toFixed(4)}`
-                        )
-                    ),
-                    
-                    // Locked Price
-                    React.createElement('div', { className: "flex justify-between text-sm mb-3" },
-                        React.createElement('span', { className: "text-muted" }, t.priceLabels.lockedPrice),
-                        React.createElement('span', { className: "font-medium text-white" }, `$${round.lockedPrice.toFixed(4)}`)
-                    ),
-                    
-                    // Prize Pool
-                    React.createElement('div', { className: "flex justify-between text-sm mb-6" },
-                        React.createElement('span', { className: "text-muted" }, t.priceLabels.prizePool),
-                        React.createElement('span', { className: "font-medium text-white" }, `${formatCurrency(round.prizePool)} ${currentPair}`)
-                    ),
-                    
-                    // Коэффициенты
-                    React.createElement('div', { className: "flex gap-3" },
-                        React.createElement('div', { 
-                            className: `flex-1 text-center py-3 rounded-xl ${isUp ? 'up-button-telegram text-white' : 'bg-opacity-10 bg-white text-muted'}`
-                        },
-                            React.createElement('div', { className: "font-bold text-lg" }, t.betButtons.up),
-                            React.createElement('div', { className: "text-sm opacity-90" }, `${payoutUp}x ${t.betButtons.payout}`)
-                        ),
-                        React.createElement('div', { 
-                            className: `flex-1 text-center py-3 rounded-xl ${!isUp ? 'down-button-telegram text-white' : 'bg-opacity-10 bg-white text-muted'}`
-                        },
-                            React.createElement('div', { className: "font-bold text-lg" }, t.betButtons.down),
-                            React.createElement('div', { className: "text-sm opacity-90" }, `${payoutDown}x ${t.betButtons.payout}`)
-                        )
-                    )
-                );
-            };
-            
-            // NEXT раунд
-            const renderNextRound = () => {
-                const isBetDisabled = hasUserBet;
-                
-                return React.createElement('div', { className: "p-5" },
-                    // Номер и статус
-                    React.createElement('div', { className: "flex justify-between items-center mb-5" },
-                        React.createElement('div', null,
-                            React.createElement('div', { className: "text-lg font-semibold text-white" }, `#${round.id}`),
-                            React.createElement('div', { className: "text-sm text-muted" }, `${currentPair}/USD`)
-                        ),
-                        React.createElement('div', { className: "next-badge-telegram text-xs font-bold px-3 py-1.5 rounded-full" }, t.roundStatus.next)
-                    ),
-                    
-                    // Prize Pool
-                    React.createElement('div', { className: "mb-5" },
-                        React.createElement('div', { className: "text-sm text-muted mb-2" }, `${t.priceLabels.prizePool}:`),
-                        React.createElement('div', { className: "text-2xl font-bold text-white" },
-                            `${formatCurrency(round.prizePool)} ${currentPair}`
-                        )
-                    ),
-                    
-                    // Показывать мою ставку если есть
-                    hasUserBet && React.createElement('div', { className: "mb-4" },
-                        React.createElement('div', { className: "my-bet-badge-telegram text-xs font-bold px-4 py-3 rounded-xl text-center" },
-                            React.createElement('div', { className: "text-sm" }, t.betModal.myBet),
-                            React.createElement('div', { className: "font-bold text-xl mt-1 mb-2" }, `${userBet.amount} ${currentPair}`),
-                            React.createElement('div', { className: "text-sm opacity-90" }, 
-                                `${userBet.side === 'up' ? t.betButtons.up : t.betButtons.down} • ${userBet.side === 'up' ? payoutUp : payoutDown}x`
-                            )
-                        ),
-                        React.createElement('div', { className: "text-xs text-muted text-center mt-2" }, t.betModal.cantCancel)
-                    ),
-                    
-                    // Кнопки ставок
-                    React.createElement('div', { className: "flex gap-3 mb-4" },
-                        React.createElement('button', {
-                            className: `flex-1 up-button-telegram text-white py-4 rounded-xl font-bold transition-all ${isBetDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90 active:scale-95'}`,
-                            onClick: () => !isBetDisabled && onBet(round.id, 'up'),
-                            disabled: isBetDisabled
-                        },
-                            React.createElement('div', { className: "text-lg" }, t.betButtons.enterUp),
-                            React.createElement('div', { className: "text-sm opacity-90 mt-1" }, `${payoutUp}x ${t.betButtons.payout}`)
-                        ),
-                        React.createElement('button', {
-                            className: `flex-1 down-button-telegram text-white py-4 rounded-xl font-bold transition-all ${isBetDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90 active:scale-95'}`,
-                            onClick: () => !isBetDisabled && onBet(round.id, 'down'),
-                            disabled: isBetDisabled
-                        },
-                            React.createElement('div', { className: "text-lg" }, t.betButtons.enterDown),
-                            React.createElement('div', { className: "text-sm opacity-90 mt-1" }, `${payoutDown}x ${t.betButtons.payout}`)
-                        )
-                    ),
-                    
-                    // Время до закрытия
-                    React.createElement('div', { className: "text-center text-sm text-muted" },
-                        `${t.betButtons.poolCloses} ${formatTime(timeLeft)}`
-                    )
-                );
-            };
-            
-            // LATER раунд
-            const renderLaterRound = () => {
-                const startTime = new Date(round.startTime);
-                const hours = startTime.getHours().toString().padStart(2, '0');
-                const minutes = startTime.getMinutes().toString().padStart(2, '0');
-                
-                return React.createElement('div', { className: "p-5" },
-                    // Номер и статус
-                    React.createElement('div', { className: "flex justify-between items-center mb-5" },
-                        React.createElement('div', null,
-                            React.createElement('div', { className: "text-lg font-semibold text-white" }, `#${round.id}`),
-                            React.createElement('div', { className: "text-sm text-muted" }, `${currentPair}/USD`)
-                        ),
-                        React.createElement('div', { className: "later-badge-telegram text-xs font-bold px-3 py-1.5 rounded-full" }, t.roundStatus.later)
-                    ),
-                    
-                    // Время начала
-                    React.createElement('div', { className: "text-center py-8" },
-                        React.createElement('div', { className: "text-sm text-muted mb-2" }, t.betButtons.entryStarts),
-                        React.createElement('div', { className: "text-2xl font-bold text-white" },
-                            `~${hours}:${minutes}`
-                        )
-                    ),
-                    
-                    // Пустые кнопки
-                    React.createElement('div', { className: "flex gap-3 opacity-50" },
-                        React.createElement('div', { className: "flex-1 up-button-telegram text-white py-4 rounded-xl font-bold text-center" },
-                            React.createElement('div', null, t.betButtons.up),
-                            React.createElement('div', { className: "text-sm opacity-90 mt-1" }, `~x ${t.betButtons.payout}`)
-                        ),
-                        React.createElement('div', { className: "flex-1 down-button-telegram text-white py-4 rounded-xl font-bold text-center" },
-                            React.createElement('div', null, t.betButtons.down),
-                            React.createElement('div', { className: "text-sm opacity-90 mt-1" }, `~x ${t.betButtons.payout}`)
-                        )
-                    )
-                );
-            };
-            
-            return React.createElement('div', {
-                className: `telegram-card cursor-pointer transition-all duration-200 ${isSelected ? 'ring-2 ring-blue-500 ring-opacity-30' : ''}`,
-                onClick: onSelect
-            }, renderContent());
-        }
-        
-        // Основное приложение
-        function App() {
-            const [rounds, setRounds] = useState([]);
-            const [selectedRound, setSelectedRound] = useState(null);
-            const [selectedPair, setSelectedPair] = useState('TON');
-            const [balance, setBalance] = useState(50.75);
-            const [betModal, setBetModal] = useState({ open: false, round: null, side: null });
-            const [loading, setLoading] = useState(true);
-            const [userBets, setUserBets] = useState([]);
-            const [language, setLanguage] = useState('en');
-            const [prices, setPrices] = useState({
-                BTC: 89188.74,
-                ETH: 2950.49,
-                BNB: 886.87,
-                TON: 7.5123
+                grid.appendChild(card);
             });
-            
-            // Текущий перевод
-            const t = TRANSLATIONS[language];
-            
-            // Генерация тестовых данных для выбранной пары
-            const generateRounds = useCallback((pair) => {
-                const now = Date.now();
-                const basePrice = prices[pair];
-                const roundsData = [];
-                
-                // PREV раунды (прошлые)
-                for (let i = 3; i > 0; i--) {
-                    const lockedPrice = basePrice * (0.995 + Math.random() * 0.01);
-                    const change = (Math.random() - 0.5) * 0.02;
-                    const closedPrice = lockedPrice + (lockedPrice * change);
-                    const isUp = change >= 0;
-                    
-                    roundsData.push({
-                        id: CONFIG.INITIAL_ROUND_ID - i,
-                        status: 'prev',
-                        lockedPrice: lockedPrice,
-                        closedPrice: closedPrice,
-                        prizePool: 0.5 + Math.random() * 2,
-                        prizePoolUp: isUp ? 0.3 + Math.random() * 1 : 0.1 + Math.random() * 0.5,
-                        prizePoolDown: !isUp ? 0.3 + Math.random() * 1 : 0.1 + Math.random() * 0.5,
-                        startTime: now - (i + 2) * CONFIG.ROUND_DURATION * 1000,
-                        endTime: now - (i + 1) * CONFIG.ROUND_DURATION * 1000
-                    });
-                }
-                
-                // LIVE раунд
-                const liveLockedPrice = basePrice * (0.998 + Math.random() * 0.004);
-                roundsData.push({
-                    id: CONFIG.INITIAL_ROUND_ID,
-                    status: 'live',
-                    lockedPrice: liveLockedPrice,
-                    currentPrice: liveLockedPrice * (0.999 + Math.random() * 0.002),
-                    prizePool: 0.8912,
-                    prizePoolUp: 0.3712,
-                    prizePoolDown: 0.52,
-                    startTime: now - 60000,
-                    endTime: now + CONFIG.ROUND_DURATION * 1000 - 60000
-                });
-                
-                // NEXT раунд
-                roundsData.push({
-                    id: CONFIG.INITIAL_ROUND_ID + 1,
-                    status: 'next',
-                    prizePool: 0.0223,
-                    prizePoolUp: 0.0093,
-                    prizePoolDown: 0.013,
-                    startTime: now + CONFIG.ROUND_DURATION * 1000,
-                    entryEndTime: now + CONFIG.ROUND_DURATION * 1000 + CONFIG.ENTRY_DURATION * 1000
-                });
-                
-                // LATER раунды
-                for (let i = 2; i <= 4; i++) {
-                    roundsData.push({
-                        id: CONFIG.INITIAL_ROUND_ID + i,
-                        status: 'later',
-                        prizePool: 0,
-                        prizePoolUp: 0,
-                        prizePoolDown: 0,
-                        startTime: now + i * CONFIG.ROUND_DURATION * 1000
-                    });
-                }
-                
-                return roundsData;
-            }, [prices]);
-            
-            // Обновление цен криптовалют
-            useEffect(() => {
-                const updatePrices = () => {
-                    setPrices(prev => ({
-                        BTC: prev.BTC * (1 + (Math.random() - 0.5) * 0.001),
-                        ETH: prev.ETH * (1 + (Math.random() - 0.5) * 0.002),
-                        BNB: prev.BNB * (1 + (Math.random() - 0.5) * 0.003),
-                        TON: prev.TON * (1 + (Math.random() - 0.5) * 0.005)
-                    }));
-                };
-                
-                updatePrices();
-                const priceInterval = setInterval(updatePrices, 3000);
-                return () => clearInterval(priceInterval);
-            }, []);
-            
-            // Инициализация
-            useEffect(() => {
-                // Инициализация Telegram Web App
-                const tg = window.Telegram?.WebApp;
-                if (tg) {
-                    tg.expand();
-                    tg.setHeaderColor('#1c1c1e');
-                    tg.setBackgroundColor('#1c1c1e');
-                    
-                    // Определение языка Telegram
-                    const userLanguage = tg.initDataUnsafe?.user?.language_code || 'en';
-                    if (userLanguage.startsWith('ru')) {
-                        setLanguage('ru');
-                    }
-                }
-                
-                // Загрузка данных
-                setTimeout(() => {
-                    setRounds(generateRounds(selectedPair));
-                    setSelectedRound(CONFIG.INITIAL_ROUND_ID + 1);
-                    setLoading(false);
-                }, 500);
-                
-                // Обновление цен LIVE раундов
-                const livePriceInterval = setInterval(() => {
-                    setRounds(prev => prev.map(round => {
-                        if (round.status === 'live' && round.currentPrice) {
-                            const change = (Math.random() - 0.5) * 0.001;
-                            return {
-                                ...round,
-                                currentPrice: round.currentPrice * (1 + change)
-                            };
-                        }
-                        return round;
-                    }));
-                }, 2000);
-                
-                return () => clearInterval(livePriceInterval);
-            }, [generateRounds, selectedPair]);
-            
-            // Обновление раундов при смене пары
-            useEffect(() => {
-                if (!loading) {
-                    setRounds(generateRounds(selectedPair));
-                    setSelectedRound(CONFIG.INITIAL_ROUND_ID + 1);
-                }
-            }, [selectedPair, loading, generateRounds]);
-            
-            // Получение LIVE или NEXT раунда для таймера
-            const getTimerRound = useMemo(() => {
-                const liveRound = rounds.find(r => r.status === 'live');
-                const nextRound = rounds.find(r => r.status === 'next');
-                return { liveRound, nextRound };
-            }, [rounds]);
-            
-            // Время для таймера
-            const timerTimeLeft = useMemo(() => {
-                const now = Date.now();
-                if (getTimerRound.liveRound) {
-                    return Math.max(0, Math.floor((getTimerRound.liveRound.endTime - now) / 1000));
-                } else if (getTimerRound.nextRound) {
-                    return Math.max(0, Math.floor((getTimerRound.nextRound.entryEndTime - now) / 1000));
-                }
-                return 0;
-            }, [getTimerRound]);
-            
-            // Проверка, есть ли ставка в раунде
-            const hasBetInRound = (roundId) => {
-                return userBets.some(bet => bet.roundId === roundId);
-            };
-            
-            // Обработка ставки
-            const handleBet = (roundId, side) => {
-                // Проверка на уже сделанную ставку
-                if (hasBetInRound(roundId)) {
-                    alert(t.alerts.oneBetOnly);
-                    return;
-                }
-                
-                const round = rounds.find(r => r.id === roundId);
-                if (round && round.status === 'next') {
-                    setBetModal({ open: true, round, side });
-                }
-            };
-            
-            // Подтверждение ставки
-            const confirmBet = (roundId, amount, side) => {
-                // Проверка на уже сделанную ставку
-                if (hasBetInRound(roundId)) {
-                    alert(t.alerts.alreadyBet);
-                    return;
-                }
-                
-                // Обновляем раунд
-                setRounds(prev => prev.map(round => {
-                    if (round.id === roundId) {
-                        const updatedRound = { ...round };
-                        updatedRound.prizePool += amount;
-                        
-                        if (side === 'up') {
-                            updatedRound.prizePoolUp += amount;
-                        } else {
-                            updatedRound.prizePoolDown += amount;
-                        }
-                        
-                        return updatedRound;
-                    }
-                    return round;
-                }));
-                
-                // Добавляем ставку в историю
-                const newBet = {
-                    roundId,
-                    amount,
-                    side,
-                    pair: selectedPair,
-                    timestamp: Date.now()
-                };
-                setUserBets(prev => [...prev, newBet]);
-                
-                // Обновляем баланс
-                setBalance(prev => prev - amount);
-                
-                // Показываем уведомление
-                const alertMessage = `${t.alerts.betPlaced} ${amount} ${selectedPair} on ${side.toUpperCase()}`;
-                if (window.Telegram?.WebApp) {
-                    window.Telegram.WebApp.showAlert(alertMessage);
-                } else {
-                    alert(alertMessage);
-                }
-                
-                setBetModal({ open: false, round: null, side: null });
-            };
-            
-            // Пополнение баланса
-            const addBalance = () => {
-                const newBalance = balance + 100;
-                setBalance(newBalance);
-                
-                const alertMessage = t.alerts.balanceAdded;
-                if (window.Telegram?.WebApp) {
-                    window.Telegram.WebApp.showAlert(alertMessage);
-                } else {
-                    alert(alertMessage);
-                }
-            };
-            
-            // Переключение языка
-            const toggleLanguage = () => {
-                setLanguage(lang => lang === 'en' ? 'ru' : 'en');
-            };
-            
-            // Модальное окно ставки
-            const BetModal = ({ round, side, onClose, onConfirm, balance, hasUserBet }) => {
-                const [amount, setAmount] = useState(CONFIG.MIN_BET.toString());
-                const [quickAmounts] = useState([1, 5, 10, 25, 50, 100]);
-                
-                // Расчет возможного выигрыша
-                const potentialWin = useMemo(() => {
-                    const betAmount = parseFloat(amount) || 0;
-                    if (betAmount <= 0) return 0;
-                    
-                    if (side === 'up') {
-                        const payout = round.prizePoolUp > 0 
-                            ? (round.prizePool / round.prizePoolUp * (1 - CONFIG.COMMISSION))
-                            : 1;
-                        return betAmount * payout;
-                    } else {
-                        const payout = round.prizePoolDown > 0 
-                            ? (round.prizePool / round.prizePoolDown * (1 - CONFIG.COMMISSION))
-                            : 1;
-                        return betAmount * payout;
-                    }
-                }, [amount, side, round]);
-                
-                const handleConfirm = () => {
-                    // Проверка на уже сделанную ставку
-                    if (hasUserBet) {
-                        alert(t.alerts.alreadyBet);
-                        return;
-                    }
-                    
-                    const betAmount = parseFloat(amount);
-                    if (isNaN(betAmount) || betAmount < CONFIG.MIN_BET || betAmount > CONFIG.MAX_BET) {
-                        alert(`${t.alerts.amountRange} ${CONFIG.MIN_BET} and ${CONFIG.MAX_BET} ${selectedPair}`);
-                        return;
-                    }
-                    
-                    if (betAmount > balance) {
-                        alert(t.alerts.insufficientBalance);
-                        return;
-                    }
-                    
-                    onConfirm(round.id, betAmount, side);
-                };
-                
-                return React.createElement('div', { className: "modal-overlay-telegram fixed inset-0 flex items-center justify-center z-50 p-4" },
-                    React.createElement('div', { className: "telegram-card w-full max-w-sm" },
-                        // Заголовок
-                        React.createElement('div', { className: "p-5 border-b border-white border-opacity-10" },
-                            React.createElement('div', { className: "flex justify-between items-center" },
-                                React.createElement('div', { className: "text-lg font-semibold text-white" }, `${t.betModal.title}${round.id}`),
-                                React.createElement('button', { 
-                                    onClick: onClose,
-                                    className: "text-muted hover:text-white text-2xl"
-                                }, "×")
-                            ),
-                            React.createElement('div', { className: `mt-3 text-xl font-bold ${side === 'up' ? 'text-price-up' : 'text-price-down'}` },
-                                `${t.betModal.predict} ${side.toUpperCase()}`
-                            ),
-                            // Предупреждение о невозможности отмены
-                            React.createElement('div', { className: "mt-2 text-sm text-muted" }, t.betModal.cantCancel)
-                        ),
-                        
-                        // Сумма ставки
-                        React.createElement('div', { className: "p-5" },
-                            React.createElement('div', { className: "mb-6" },
-                                React.createElement('div', { className: "flex justify-between text-sm text-muted mb-3" },
-                                    React.createElement('span', null, t.betModal.amount),
-                                    React.createElement('span', null, `${t.betModal.balance}: ${balance.toFixed(2)} ${selectedPair}`)
-                                ),
-                                React.createElement('div', { className: "relative" },
-                                    React.createElement('input', {
-                                        type: "number",
-                                        min: CONFIG.MIN_BET,
-                                        max: Math.min(CONFIG.MAX_BET, balance),
-                                        step: "0.1",
-                                        value: amount,
-                                        onChange: (e) => setAmount(e.target.value),
-                                        className: "w-full p-5 text-3xl font-bold text-center bg-white bg-opacity-5 border border-white border-opacity-10 text-white rounded-xl focus:outline-none focus:border-blue-500",
-                                        placeholder: "0.0"
-                                    }),
-                                    React.createElement('div', { className: "absolute right-4 top-1/2 transform -translate-y-1/2 text-muted font-medium" }, selectedPair)
-                                )
-                            ),
-                            
-                            // Быстрые суммы
-                            React.createElement('div', { className: "grid grid-cols-3 gap-3 mb-8" },
-                                quickAmounts.map(quickAmount => 
-                                    React.createElement('button', {
-                                        key: quickAmount,
-                                        className: `py-3 rounded-lg text-sm font-medium ${amount === quickAmount.toString() ? 'telegram-button text-white' : 'bg-white bg-opacity-5 text-white hover:bg-opacity-10'}`,
-                                        onClick: () => setAmount(quickAmount.toString())
-                                    }, `${quickAmount} ${selectedPair}`)
-                                )
-                            ),
-                            
-                            // Информация о выплате
-                            React.createElement('div', { className: "bg-white bg-opacity-5 rounded-xl p-4 mb-8" },
-                                React.createElement('div', { className: "flex justify-between text-sm mb-3" },
-                                    React.createElement('span', { className: "text-muted" }, t.betModal.potentialPayout),
-                                    React.createElement('span', { className: "font-bold text-white text-lg" }, `${potentialWin.toFixed(2)} ${selectedPair}`)
-                                ),
-                                React.createElement('div', { className: "flex justify-between text-sm" },
-                                    React.createElement('span', { className: "text-muted" }, t.betButtons.payout),
-                                    React.createElement('span', { className: "font-bold text-white" },
-                                        side === 'up' 
-                                            ? `${(round.prizePool / round.prizePoolUp * (1 - CONFIG.COMMISSION)).toFixed(2)}x`
-                                            : `${(round.prizePool / round.prizePoolDown * (1 - CONFIG.COMMISSION)).toFixed(2)}x`
-                                    )
-                                )
-                            ),
-                            
-                            // Кнопки
-                            React.createElement('div', { className: "flex gap-4" },
-                                React.createElement('button', {
-                                    onClick: handleConfirm,
-                                    className: `flex-1 py-4 rounded-xl font-bold text-white telegram-button hover:opacity-90 ${hasUserBet ? 'opacity-50 cursor-not-allowed' : ''}`,
-                                    disabled: hasUserBet
-                                }, t.betModal.confirm),
-                                React.createElement('button', {
-                                    onClick: onClose,
-                                    className: "flex-1 py-4 bg-white bg-opacity-10 text-white rounded-xl font-bold hover:bg-opacity-20"
-                                }, t.betModal.cancel)
-                            )
-                        )
-                    )
-                );
-            };
-            
-            if (loading) {
-                return React.createElement('div', { className: "min-h-screen flex items-center justify-center" },
-                    React.createElement('div', { className: "text-center" },
-                        React.createElement('div', { className: "animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4" }),
-                        React.createElement('p', { className: "text-muted" }, t.loading)
-                    )
-                );
-            }
-            
-            return React.createElement('div', { className: "min-h-screen pb-28 telegram-gradient-bg" },
-                // Шапка с балансом и языком
-                React.createElement('header', { className: "px-4 pt-6 pb-4" },
-                    React.createElement('div', { className: "flex justify-between items-center" },
-                        React.createElement('div', null,
-                            React.createElement('h1', { className: "text-2xl font-bold text-white" }, t.title),
-                            React.createElement('p', { className: "text-sm text-muted mt-1" }, t.subtitle)
-                        ),
-                        React.createElement('div', { className: "text-right" },
-                            React.createElement('div', { className: "text-xl font-bold text-white" }, `${balance.toFixed(2)} TON`),
-                            React.createElement('div', { className: "text-xs text-muted" }, t.balance)
-                        )
-                    ),
-                    // Кнопка переключения языка
-                    React.createElement('div', { className: "mt-4 flex justify-end" },
-                        React.createElement('button', {
-                            onClick: toggleLanguage,
-                            className: "text-sm bg-white bg-opacity-10 hover:bg-opacity-20 text-white px-4 py-2 rounded-full flex items-center gap-2 transition-all"
-                        },
-                            language === 'en' ? '🇷🇺 Русский' : '🇺🇸 English'
-                        )
-                    )
-                ),
-                
-                // Пары криптовалют (кликабельные)
-                React.createElement(PairsHeader, { 
-                    prices: prices, 
-                    selectedPair: selectedPair,
-                    onSelectPair: setSelectedPair,
-                    language: language 
-                }),
-                
-                // Таймер между парами и раундами
-                React.createElement(RoundTimer, { 
-                    timeLeft: timerTimeLeft, 
-                    t: t,
-                    isLive: !!getTimerRound.liveRound 
-                }),
-                
-                // Контейнер с карточками раундов
-                React.createElement('main', { className: "px-4" },
-                    React.createElement('div', { className: "scroll-container flex overflow-x-auto gap-4 pb-4 -mx-4 px-4" },
-                        rounds.map(round => 
-                            React.createElement('div', { 
-                                key: round.id,
-                                className: "flex-shrink-0 w-80"
-                            },
-                                React.createElement(PredictionCard, {
-                                    round: round,
-                                    onBet: handleBet,
-                                    balance: balance,
-                                    isSelected: selectedRound === round.id,
-                                    onSelect: () => setSelectedRound(round.id),
-                                    t: t,
-                                    userBets: userBets,
-                                    currentPair: selectedPair
-                                })
-                            )
-                        )
-                    ),
-                    
-                    // Информация о выбранном раунде
-                    selectedRound && React.createElement('div', { className: "mt-6 text-center text-sm text-muted" },
-                        React.createElement('p', null, t.selectRound, selectedRound),
-                        React.createElement('p', { className: "text-xs mt-2" }, t.swipeHint)
-                    ),
-                    
-                    // Информация о ставках пользователя
-                    userBets.length > 0 && React.createElement('div', { className: "mt-6 telegram-card p-5" },
-                        React.createElement('h3', { className: "font-bold text-white text-lg mb-4 flex items-center gap-2" },
-                            React.createElement('span', null, "📊"),
-                            React.createElement('span', null, "Your Bets")
-                        ),
-                        React.createElement('div', { className: "space-y-3" },
-                            userBets.map((bet, index) => {
-                                const round = rounds.find(r => r.id === bet.roundId);
-                                return React.createElement('div', { 
-                                    key: index,
-                                    className: "flex justify-between items-center py-3 border-b border-white border-opacity-10 last:border-0"
-                                },
-                                    React.createElement('div', null,
-                                        React.createElement('div', { className: "font-medium text-white" }, `Round #${bet.roundId}`),
-                                        React.createElement('div', { className: `text-sm ${bet.side === 'up' ? 'text-price-up' : 'text-price-down'} flex items-center gap-1` },
-                                            React.createElement('span', null, bet.side === 'up' ? '📈' : '📉'),
-                                            React.createElement('span', null, bet.side === 'up' ? t.betButtons.up : t.betButtons.down)
-                                        )
-                                    ),
-                                    React.createElement('div', { className: "text-right" },
-                                        React.createElement('div', { className: "font-bold text-white text-lg" }, `${bet.amount} ${bet.pair}`),
-                                        round && React.createElement('div', { className: "text-xs text-muted" },
-                                            `${t.priceLabels.prizePool}: ${round.prizePool.toFixed(4)} ${bet.pair}`
-                                        )
-                                    )
-                                );
-                            })
-                        )
-                    )
-                ),
-                
-                // Модальное окно ставки
-                betModal.open && React.createElement(BetModal, {
-                    round: betModal.round,
-                    side: betModal.side,
-                    balance: balance,
-                    onClose: () => setBetModal({ open: false, round: null, side: null }),
-                    onConfirm: confirmBet,
-                    hasUserBet: hasBetInRound(betModal.round?.id)
-                }),
-                
-                // Кнопка пополнения
-                React.createElement('div', { className: "floating-bottom-telegram p-4" },
-                    React.createElement('button', {
-                        className: "w-full py-4 telegram-button text-white font-bold rounded-xl shadow-lg hover:opacity-90 active:scale-95 transition-all",
-                        onClick: addBalance
-                    },
-                        React.createElement('div', { className: "flex items-center justify-center gap-3" },
-                            React.createElement('div', { className: "text-2xl" }, "💎"),
-                            React.createElement('span', { className: "text-lg" }, t.addBalance)
-                        )
-                    )
-                )
-            );
         }
-        
-        // Запуск приложения
-        ReactDOM.render(React.createElement(App), document.getElementById('root'));
+
+        // ========== EVENT HANDLERS ==========
+        function setupEventListeners() {
+            // Connect Wallet
+            document.getElementById('connectWalletBtn').addEventListener('click', function() {
+                if (!userWallet) {
+                    // Simulate wallet connection
+                    userWallet = '0x' + Math.random().toString(16).substr(2, 10) + '...' + Math.random().toString(16).substr(2, 6);
+                    this.innerHTML = `<i class="fas fa-wallet"></i> ${userWallet}`;
+                    updateBetPanelState();
+                } else {
+                    userWallet = null;
+                    this.innerHTML = `<i class="fas fa-wallet"></i> Connect Wallet`;
+                    selectedCard = null;
+                    selectedDirection = null;
+                    updateBetPanelState();
+                }
+            });
+
+            // Card Selection (Up/Down buttons)
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('direction-btn')) {
+                    if (!userWallet) {
+                        alert('Please connect your wallet first!');
+                        return;
+                    }
+                    
+                    const roundId = parseInt(e.target.dataset.round);
+                    const direction = e.target.dataset.direction;
+                    
+                    // Update selection
+                    selectedCard = roundId;
+                    selectedDirection = direction;
+                    
+                    // Update UI
+                    document.querySelectorAll('.direction-btn').forEach(btn => {
+                        btn.style.boxShadow = 'none';
+                        btn.style.opacity = '1';
+                    });
+                    e.target.style.boxShadow = `0 0 0 3px ${direction === 'up' ? 'rgba(76, 217, 100, 0.5)' : 'rgba(255, 90, 90, 0.5)'}`;
+                    e.target.style.opacity = '0.9';
+                    
+                    updateBetPanelState();
+                }
+            });
+
+            // Quick commit amount buttons
+            document.querySelectorAll('.commit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const multiplier = parseFloat(this.dataset.multiplier);
+                    document.getElementById('commitAmount').value = multiplier.toFixed(multiplier >= 1 ? 0 : 2);
+                    validateCommitAmount();
+                });
+            });
+
+            // Commit amount input
+            document.getElementById('commitAmount').addEventListener('input', validateCommitAmount);
+
+            // Enter Position button
+            document.getElementById('enterPositionBtn').addEventListener('click', function() {
+                if (!selectedCard || !selectedDirection || !userWallet) return;
+                
+                const amount = parseFloat(document.getElementById('commitAmount').value);
+                if (amount <= 0 || amount > userBalance) {
+                    alert(`Invalid amount. Your balance: ${userBalance.toFixed(2)} BNB`);
+                    return;
+                }
+                
+                // Find selected round data
+                const round = predictionRounds.find(r => r.id === selectedCard);
+                const payout = selectedDirection === 'up' ? round.payoutUp : round.payoutDown;
+                const potentialWin = amount * payout;
+                
+                // Simulate transaction
+                if (confirm(`Enter ${amount} BNB on ${selectedDirection.toUpperCase()} for Round #${selectedCard}?\nPotential payout: ${potentialWin.toFixed(4)} BNB (${payout}x)`)) {
+                    alert('Position entered successfully!');
+                    userBalance -= amount;
+                    
+                    // Reset selection
+                    selectedCard = null;
+                    selectedDirection = null;
+                    document.querySelectorAll('.direction-btn').forEach(btn => {
+                        btn.style.boxShadow = 'none';
+                        btn.style.opacity = '1';
+                    });
+                    document.getElementById('commitAmount').value = '0.1';
+                    updateBetPanelState();
+                }
+            });
+
+            // Later button
+            document.getElementById('cancelBtn').addEventListener('click', function() {
+                selectedCard = null;
+                selectedDirection = null;
+                document.querySelectorAll('.direction-btn').forEach(btn => {
+                    btn.style.boxShadow = 'none';
+                    btn.style.opacity = '1';
+                });
+                updateBetPanelState();
+            });
+        }
+
+        // ========== UI UPDATES ==========
+        function updateBetPanelState() {
+            const enterBtn = document.getElementById('enterPositionBtn');
+            const selectedInfo = document.getElementById('selectedRoundInfo');
+            
+            if (selectedCard && selectedDirection) {
+                const round = predictionRounds.find(r => r.id === selectedCard);
+                const payout = selectedDirection === 'up' ? round.payoutUp : round.payoutDown;
+                
+                selectedInfo.innerHTML = `
+                    <div>Round <strong>#${selectedCard}</strong></div>
+                    <div>Direction: <span class="selected-direction direction-selected-${selectedDirection}">${selectedDirection.toUpperCase()}</span></div>
+                    <div style="margin-top: 10px; font-size: 14px; color: var(--text-secondary);">Payout: <strong>${payout.toFixed(2)}x</strong></div>
+                `;
+                
+                enterBtn.disabled = false;
+                enterBtn.innerHTML = `<i class="fas fa-arrow-${selectedDirection}"></i> Enter ${selectedDirection.toUpperCase()} Position`;
+            } else {
+                selectedInfo.textContent = 'Select a round and direction to begin';
+                enterBtn.disabled = true;
+                enterBtn.innerHTML = `<i class="fas fa-arrow-up"></i> Enter Position`;
+            }
+        }
+
+        function validateCommitAmount() {
+            const amount = parseFloat(document.getElementById('commitAmount').value) || 0;
+            const enterBtn = document.getElementById('enterPositionBtn');
+            
+            if (amount <= 0) {
+                enterBtn.disabled = true;
+            } else if (amount > userBalance) {
+                enterBtn.disabled = true;
+                // You could show an error tooltip here
+            } else if (selectedCard && selectedDirection) {
+                enterBtn.disabled = false;
+            }
+        }
+
+        // ========== LIVE PRICE SIMULATION ==========
+        function simulateLivePriceMovement() {
+            const liveRound = predictionRounds.find(r => r.status === 'Live');
+            if (!liveRound) return;
+            
+            const priceElement = document.getElementById(`livePrice-${liveRound.id}`);
+            if (!priceElement) return;
+            
+            let currentPrice = liveRound.lastPrice;
+            
+            // Simulate price changes every 3 seconds
+            setInterval(() => {
+                // Random small price movement
+                const change = (Math.random() - 0.5) * 0.3;
+                currentPrice += change;
+                
+                // Update display
+                priceElement.textContent = `$${currentPrice.toFixed(4)}`;
+                
+                // You could also update the change indicator here
+            }, 3000);
+        }
     </script>
 </body>
 </html>
